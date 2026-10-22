@@ -90,21 +90,28 @@
       #foodLabelModal { 
         position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: auto !important; 
         background: white !important; color: black !important; padding: 0 !important; margin: 0 !important; display: block !important;
+        max-height: none !important; overflow: visible !important;
+      }
+      #foodLabelModal .label-print-card {
+        border-color: #000000 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+        margin-bottom: 16px !important;
       }
       #kitchenModal div, #kitchenModal span, #kitchenModal h2, #kitchenModal h3, #kitchenModal p, 
       #kitchenModal td, #kitchenModal th, #kitchenModal li, #kitchenModal strong, #kitchenModal ol, 
       #kitchenModal table, #kitchenModal tr,
       #foodLabelModal div, #foodLabelModal span, #foodLabelModal h2, #foodLabelModal h3, #foodLabelModal h4, #foodLabelModal p,
       #foodLabelModal td, #foodLabelModal th, #foodLabelModal li, #foodLabelModal strong, #foodLabelModal table, #foodLabelModal tr {
-        background-color: white !important; background: white !important; color: black !important; box-shadow: none !important; border-color: #cbd5e1 !important;
+        background-color: white !important; background: white !important; color: black !important; box-shadow: none !important; border-color: #000000 !important;
       }
       #kitchenModal button, #kitchenModal .no-print,
       #foodLabelModal button, #foodLabelModal .no-print { display: none !important; }
       table { border-collapse: collapse !important; width: 100% !important; page-break-inside: auto; }
       tr { page-break-inside: avoid; page-break-after: auto; }
-      th, td { border-bottom: 1px solid #cbd5e1 !important; padding: 8px 10px !important; color: black !important; font-family: 'Noto Sans KR', 'Inter', sans-serif !important; }
+      th, td { border: 1px solid #000000 !important; padding: 6px 8px !important; color: black !important; font-family: 'Noto Sans KR', 'Inter', sans-serif !important; }
       h2, h3, h4, strong { color: black !important; font-weight: 700 !important; }
-      input, textarea { border: none !important; background: transparent !important; padding: 0 !important; resize: none !important; }
+      input, textarea { border: none !important; background: transparent !important; padding: 0 !important; resize: none !important; width: 100% !important; }
       -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
   </style>
@@ -537,31 +544,34 @@
   </div>
 
   <!-- 식품위생법 영양표시 및 성분표 라벨 모달 -->
-  <div id="foodLabelModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-    <div class="bg-white border border-[#E6E4DD] rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl flex flex-col max-h-[92vh] custom-scroll">
+  <div id="foodLabelModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto">
+    <div class="bg-white border border-[#E6E4DD] rounded-2xl max-w-5xl w-full p-4 sm:p-6 shadow-2xl flex flex-col max-h-[94vh] my-auto">
       
       <!-- 모달 상단 헤더 (no-print) -->
-      <div class="flex items-center justify-between border-b border-[#EFECE6] pb-3 mb-3 no-print gap-2">
+      <div class="flex items-center justify-between border-b border-[#EFECE6] pb-3 mb-3 no-print gap-2 shrink-0">
         <div class="min-w-0">
           <div class="flex items-center gap-2 flex-wrap">
-            <h3 class="text-sm sm:text-base font-extrabold text-[#24282B]">식품위생법 규격 표시사항 및 라벨</h3>
-            <span class="text-[10px] px-2 py-0.5 rounded bg-[#EBF2EE] text-[#385E50] font-bold">AI 자동분석 및 편집 지원</span>
+            <span class="px-2 py-0.5 rounded-md bg-[#385E50] text-white text-[11px] font-bold">식약처 고시 규격</span>
+            <h3 class="text-sm sm:text-base font-extrabold text-[#24282B]">식품등의 표시기준 라벨 인쇄 및 편집</h3>
           </div>
-          <p class="text-[11px] text-[#8B959E] mt-0.5">AI가 제품 특성을 분석해 법적 필수 문구를 자동 생성하며, 모든 항목을 직접 수정할 수 있습니다.</p>
+          <p class="text-[11px] text-[#8B959E] mt-0.5">제품 스펙에 맞춰 AI가 생성한 규격 문구이며, 클릭하여 각 항목을 실시간으로 직접 수정할 수 있습니다.</p>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
-          <button id="btnAiDraftLabel" onclick="generateAiFoodLabelDraft()" class="px-2.5 py-1.5 rounded-lg btn-sage-primary text-xs shadow-2xs flex items-center gap-1 font-bold">
+          <button id="btnAiDraftLabel" onclick="generateAiFoodLabelDraft()" class="px-3 py-1.5 rounded-lg btn-sage-primary text-xs shadow-2xs flex items-center gap-1 font-bold">
             <span id="aiLabelSpinner" class="hidden w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
             <span id="aiLabelBtnText">AI 라벨 재분석</span>
           </button>
-          <button onclick="closeModal('foodLabelModal')" class="w-7 h-7 rounded-lg bg-[#FAF9F6] hover:bg-[#EFECE6] text-[#6E7882] flex items-center justify-center text-sm font-bold shrink-0">&times;</button>
+          <button onclick="closeModal('foodLabelModal')" class="w-8 h-8 rounded-lg bg-[#FAF9F6] hover:bg-[#EFECE6] text-[#6E7882] flex items-center justify-center text-base font-bold shrink-0 transition">&times;</button>
         </div>
       </div>
 
       <!-- 탭 선택 바 (no-print) -->
-      <div class="flex items-center justify-between gap-1.5 p-1 bg-[#FAF9F6] border border-[#E6E4DD] rounded-xl mb-3.5 no-print overflow-x-auto">
-        <div class="flex items-center gap-1">
-          <button id="tabBtn-nutrition" onclick="switchFoodLabelTab('nutrition')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-[#385E50] text-white shadow-2xs">
+      <div class="flex items-center justify-between gap-1 p-1 bg-[#FAF9F6] border border-[#E6E4DD] rounded-xl mb-3 no-print overflow-x-auto shrink-0">
+        <div class="flex items-center gap-1 min-w-max">
+          <button id="tabBtn-all" onclick="switchFoodLabelTab('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-[#385E50] text-white shadow-2xs">
+            전체 통합 보기 (권장)
+          </button>
+          <button id="tabBtn-nutrition" onclick="switchFoodLabelTab('nutrition')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-[#5E676E] hover:text-[#24282B]">
             1. 식품 영양정보
           </button>
           <button id="tabBtn-ingredients" onclick="switchFoodLabelTab('ingredients')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-[#5E676E] hover:text-[#24282B]">
@@ -570,216 +580,309 @@
           <button id="tabBtn-mandatory" onclick="switchFoodLabelTab('mandatory')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-[#5E676E] hover:text-[#24282B]">
             3. 식품 표시사항
           </button>
-          <button id="tabBtn-all" onclick="switchFoodLabelTab('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-[#5E676E] hover:text-[#24282B]">
-            전체 통합 보기
-          </button>
+        </div>
+        <div class="text-[11px] text-[#6E7882] pr-2 hidden md:block">
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 mr-1"></span>입력 필드를 클릭하여 내용 편집 가능
         </div>
       </div>
 
-      <!-- 라벨 카드 본문 (인쇄 및 직접 편집 대상) -->
-      <div id="labelPrintRoot" class="space-y-4">
-        
-        <!-- 1. 식품 영양정보 카드 (편집 가능) -->
-        <div id="section-nutrition" class="border-2 border-black p-4 rounded-xl bg-white text-slate-900">
-          <div class="border-b-4 border-black pb-1.5 flex justify-between items-baseline gap-2">
-            <input type="text" id="labelTitle" value="영 양 정 보" class="font-black text-base sm:text-lg tracking-tight bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none w-1/2">
-            <input type="text" id="labelServingSize" value="1회 제공량 기준" class="text-xs text-right text-slate-600 font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none w-1/2">
-          </div>
-          <div class="flex justify-between items-baseline border-b border-black py-1.5 font-bold">
-            <span class="text-xs sm:text-sm">열 량</span>
-            <div class="flex items-center gap-1">
-              <input type="number" id="labelCaloriesVal" value="0" class="font-black text-base sm:text-lg text-right text-black num-font w-20 bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
-              <span class="text-sm">kcal</span>
-            </div>
-          </div>
-          <div class="space-y-1.5 text-xs divide-y divide-slate-200">
-            <!-- 나트륨 -->
-            <div class="flex justify-between items-center pt-1.5">
-              <div class="flex items-center gap-1">
-                <span>나트륨</span>
-                <input type="number" id="labelSodiumVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
-                <span>mg</span>
+      <!-- 라벨 카드 스크롤 가능 컨테이너 -->
+      <div class="overflow-y-auto custom-scroll flex-1 pr-0.5">
+        <div id="labelPrintRoot" class="grid grid-cols-1 md:grid-cols-12 gap-3.5 transition-all">
+          
+          <!-- 1. 식품 영양정보 카드 (표준 세로형 영양성분표 규격) -->
+          <div id="section-nutrition" class="label-print-card md:col-span-5 border-2 border-black p-3.5 rounded-xl bg-white text-slate-900 flex flex-col justify-between">
+            <div>
+              <div class="border-b-4 border-black pb-1.5 flex items-baseline justify-between gap-2">
+                <input type="text" id="labelTitle" value="영 양 정 보" class="font-black text-lg sm:text-xl tracking-tight bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none w-2/5 shrink-0 text-black">
+                <input type="text" id="labelServingSize" value="1회 제공량 42g" class="text-xs text-right text-slate-700 font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none flex-1 truncate">
               </div>
-              <div class="flex items-center gap-0.5">
-                <input type="number" id="labelSodiumPctVal" value="0" class="w-10 text-right text-slate-600 font-mono font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
-                <span class="font-bold text-slate-600 font-mono">%</span>
-              </div>
-            </div>
-            <!-- 탄수화물 -->
-            <div class="flex justify-between items-center pt-1.5">
-              <div class="flex items-center gap-1">
-                <span>탄수화물</span>
-                <input type="number" step="0.1" id="labelCarbsVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
-                <span>g</span>
-              </div>
-              <div class="flex items-center gap-0.5">
-                <input type="number" id="labelCarbsPctVal" value="0" class="w-10 text-right text-slate-600 font-mono font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
-                <span class="font-bold text-slate-600 font-mono">%</span>
-              </div>
-            </div>
-            <!-- 당류 -->
-            <div class="flex justify-between items-center pl-3 pt-0.5 text-slate-700 text-[11px]">
-              <div class="flex items-center gap-1">
-                <span>당류</span>
-                <input type="number" step="0.1" id="labelSugarVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
-                <span>g</span>
-              </div>
-              <div class="flex items-center gap-0.5">
-                <input type="number" id="labelSugarPctVal" value="0" class="w-10 text-right text-slate-500 font-mono bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
-                <span class="text-slate-500 font-mono">%</span>
-              </div>
-            </div>
-            <!-- 지방 -->
-            <div class="flex justify-between items-center pt-1.5">
-              <div class="flex items-center gap-1">
-                <span>지방</span>
-                <input type="number" step="0.1" id="labelFatVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
-                <span>g</span>
-              </div>
-              <div class="flex items-center gap-0.5">
-                <input type="number" id="labelFatPctVal" value="0" class="w-10 text-right text-slate-600 font-mono font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
-                <span class="font-bold text-slate-600 font-mono">%</span>
-              </div>
-            </div>
-            <!-- 트랜스지방 -->
-            <div class="flex justify-between items-center pl-3 pt-0.5 text-slate-700 text-[11px]">
-              <div class="flex items-center gap-1">
-                <span>트랜스지방</span>
-                <input type="number" step="0.1" id="labelTransFatVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
-                <span>g</span>
-              </div>
-              <span class="text-slate-400 font-mono">-</span>
-            </div>
-            <!-- 포화지방 -->
-            <div class="flex justify-between items-center pl-3 pt-0.5 text-slate-700 text-[11px]">
-              <div class="flex items-center gap-1">
-                <span>포화지방</span>
-                <input type="number" step="0.1" id="labelSatFatVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
-                <span>g</span>
-              </div>
-              <div class="flex items-center gap-0.5">
-                <input type="number" id="labelSatFatPctVal" value="0" class="w-10 text-right text-slate-500 font-mono bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
-                <span class="text-slate-500 font-mono">%</span>
-              </div>
-            </div>
-            <!-- 콜레스테롤 -->
-            <div class="flex justify-between items-center pt-1.5">
-              <div class="flex items-center gap-1">
-                <span>콜레스테롤</span>
-                <input type="number" id="labelCholesterolVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
-                <span>mg</span>
-              </div>
-              <div class="flex items-center gap-0.5">
-                <input type="number" id="labelCholesterolPctVal" value="0" class="w-10 text-right text-slate-600 font-mono font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
-                <span class="font-bold text-slate-600 font-mono">%</span>
-              </div>
-            </div>
-            <!-- 단백질 -->
-            <div class="flex justify-between items-center pt-1.5">
-              <div class="flex items-center gap-1">
-                <span>단백질</span>
-                <input type="number" step="0.1" id="labelProteinVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
-                <span>g</span>
-              </div>
-              <div class="flex items-center gap-0.5">
-                <input type="number" id="labelProteinPctVal" value="0" class="w-10 text-right text-slate-600 font-mono font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
-                <span class="font-bold text-slate-600 font-mono">%</span>
-              </div>
-            </div>
-          </div>
-          <p class="text-[10px] text-slate-500 mt-2.5 text-right leading-tight">* 1일 영양성분 기준치에 대한 비율(%)은 2,000 kcal 기준이므로 개인 필요 열량에 따라 다를 수 있습니다.</p>
-        </div>
 
-        <!-- 2. 원재료명 및 함량 카드 (직접 편집 가능) -->
-        <div id="section-ingredients" class="border-2 border-black p-4 rounded-xl bg-white text-slate-900 space-y-2.5">
-          <div class="border-b-2 border-black pb-1.5 flex justify-between items-center">
-            <h4 class="font-black text-xs sm:text-sm tracking-tight text-slate-900">원재료명 및 함량 (성분 표기)</h4>
-            <span class="text-[10px] text-slate-500">배합비 순차 정렬 / 직접 편집 가능</span>
-          </div>
-          <div>
-            <textarea id="labelIngredientsText" rows="4" class="w-full text-xs text-slate-800 leading-relaxed p-2 bg-[#FAF9F6] border border-[#DDD9CE] rounded-lg focus:border-[#385E50] focus:bg-white focus:outline-none" placeholder="원재료명 및 배합비 내역이 표시됩니다."></textarea>
-          </div>
-          <div class="bg-rose-50 border border-rose-200 p-2.5 rounded-lg text-xs text-slate-900 flex items-baseline gap-1.5 flex-wrap">
-            <strong class="text-rose-700 font-bold shrink-0">알레르기 유발 물질:</strong>
-            <input type="text" id="labelAllergensInput" value="해당 없음" class="flex-1 min-w-[150px] font-bold text-rose-800 bg-transparent border-b border-dashed border-rose-300 focus:border-rose-600 focus:outline-none px-1">
-          </div>
-        </div>
+              <!-- 칼로리 요약 -->
+              <div class="flex justify-between items-baseline border-b-2 border-black py-2 font-bold">
+                <span class="text-sm">열 량</span>
+                <div class="flex items-center gap-1">
+                  <input type="number" id="labelCaloriesVal" value="0" class="font-black text-xl text-right text-black num-font w-20 bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                  <span class="text-sm font-black">kcal</span>
+                </div>
+              </div>
 
-        <!-- 3. 식품 등의 표시기준 필수 표시사항 카드 (직접 편집 가능) -->
-        <div id="section-mandatory" class="border-2 border-black p-4 rounded-xl bg-white text-slate-900 space-y-2">
-          <div class="border-b-2 border-black pb-1.5 flex justify-between items-center">
-            <h4 class="font-black text-xs sm:text-sm tracking-tight text-slate-900">식품위생법에 의한 한글 표시사항</h4>
-            <span class="text-[10px] text-slate-500">소비자기본법 규격 / 클릭하여 수정</span>
-          </div>
-          <table class="w-full text-left text-xs border-collapse">
-            <tbody class="divide-y divide-slate-200 border-y border-slate-200 text-slate-800">
-              <tr>
-                <th class="py-1.5 px-2 bg-slate-50 font-bold w-24 text-[11px] border-r border-slate-200">제품명</th>
-                <td class="py-1 px-2">
-                  <input type="text" id="labelMandatoryName" value="" class="w-full font-extrabold text-[#24282B] bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
-                </td>
-              </tr>
-              <tr>
-                <th class="py-1.5 px-2 bg-slate-50 font-bold w-24 text-[11px] border-r border-slate-200">식품의 유형</th>
-                <td class="py-1 px-2">
-                  <input type="text" id="labelMandatoryType" value="과자 (구움과자류/빵류)" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
-                </td>
-              </tr>
-              <tr>
-                <th class="py-1.5 px-2 bg-slate-50 font-bold w-24 text-[11px] border-r border-slate-200">내용량</th>
-                <td class="py-1 px-2">
-                  <input type="text" id="labelMandatoryWeight" value="" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
-                </td>
-              </tr>
-              <tr>
-                <th class="py-1.5 px-2 bg-slate-50 font-bold w-24 text-[11px] border-r border-slate-200">제조원 및 소재지</th>
-                <td class="py-1 px-2">
-                  <input type="text" id="labelMandatoryManufacturer" value="GRAM 베이커리 R&D 랩 (별도 표기)" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
-                </td>
-              </tr>
-              <tr>
-                <th class="py-1.5 px-2 bg-slate-50 font-bold w-24 text-[11px] border-r border-slate-200">소비기한</th>
-                <td class="py-1 px-2">
-                  <input type="text" id="labelMandatoryExpiry" value="" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
-                </td>
-              </tr>
-              <tr>
-                <th class="py-1.5 px-2 bg-slate-50 font-bold w-24 text-[11px] border-r border-slate-200">보관방법</th>
-                <td class="py-1 px-2">
-                  <input type="text" id="labelMandatoryStorage" value="" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
-                </td>
-              </tr>
-              <tr>
-                <th class="py-1.5 px-2 bg-slate-50 font-bold w-24 text-[11px] border-r border-slate-200">포장재질</th>
-                <td class="py-1 px-2">
-                  <input type="text" id="labelMandatoryPackaging" value="내포장(폴리프로필렌: OPP)" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
-                </td>
-              </tr>
-              <tr>
-                <th class="py-1.5 px-2 bg-slate-50 font-bold w-24 text-[11px] border-r border-slate-200">주의사항</th>
-                <td class="py-1.5 px-2">
-                  <textarea id="labelMandatoryPrecautions" rows="2" class="w-full text-[11px] text-slate-600 leading-snug bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none resize-none">부정·불량식품 신고는 국번없이 1399&#10;본 제품은 대두, 견과류, 밀, 우유, 계란을 사용하는 제조시설에서 제조하고 있습니다.</textarea>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+              <!-- 영양성분 상세 테이블 -->
+              <div class="text-xs divide-y divide-slate-200">
+                <!-- 나트륨 -->
+                <div class="flex justify-between items-center py-1.5">
+                  <div class="flex items-center gap-1">
+                    <span class="font-medium">나트륨</span>
+                    <input type="number" id="labelSodiumVal" value="0" class="w-16 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
+                    <span>mg</span>
+                  </div>
+                  <div class="flex items-center gap-0.5">
+                    <input type="number" id="labelSodiumPctVal" value="0" class="w-10 text-right text-slate-900 font-mono font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                    <span class="font-bold text-slate-900 font-mono">%</span>
+                  </div>
+                </div>
 
+                <!-- 탄수화물 -->
+                <div class="flex justify-between items-center py-1.5">
+                  <div class="flex items-center gap-1">
+                    <span class="font-medium">탄수화물</span>
+                    <input type="number" step="0.1" id="labelCarbsVal" value="0" class="w-16 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
+                    <span>g</span>
+                  </div>
+                  <div class="flex items-center gap-0.5">
+                    <input type="number" id="labelCarbsPctVal" value="0" class="w-10 text-right text-slate-900 font-mono font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                    <span class="font-bold text-slate-900 font-mono">%</span>
+                  </div>
+                </div>
+
+                <!-- 당류 -->
+                <div class="flex justify-between items-center pl-3.5 py-1 text-slate-700 text-[11px] bg-slate-50/50">
+                  <div class="flex items-center gap-1">
+                    <span>당류</span>
+                    <input type="number" step="0.1" id="labelSugarVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
+                    <span>g</span>
+                  </div>
+                  <div class="flex items-center gap-0.5">
+                    <input type="number" id="labelSugarPctVal" value="0" class="w-10 text-right text-slate-700 font-mono bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                    <span class="text-slate-700 font-mono">%</span>
+                  </div>
+                </div>
+
+                <!-- 지방 -->
+                <div class="flex justify-between items-center py-1.5">
+                  <div class="flex items-center gap-1">
+                    <span class="font-medium">지방</span>
+                    <input type="number" step="0.1" id="labelFatVal" value="0" class="w-16 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
+                    <span>g</span>
+                  </div>
+                  <div class="flex items-center gap-0.5">
+                    <input type="number" id="labelFatPctVal" value="0" class="w-10 text-right text-slate-900 font-mono font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                    <span class="font-bold text-slate-900 font-mono">%</span>
+                  </div>
+                </div>
+
+                <!-- 트랜스지방 -->
+                <div class="flex justify-between items-center pl-3.5 py-1 text-slate-700 text-[11px] bg-slate-50/50">
+                  <div class="flex items-center gap-1">
+                    <span>트랜스지방</span>
+                    <input type="number" step="0.1" id="labelTransFatVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
+                    <span>g</span>
+                  </div>
+                  <span class="text-slate-400 font-mono pr-2">-</span>
+                </div>
+
+                <!-- 포화지방 -->
+                <div class="flex justify-between items-center pl-3.5 py-1 text-slate-700 text-[11px] bg-slate-50/50">
+                  <div class="flex items-center gap-1">
+                    <span>포화지방</span>
+                    <input type="number" step="0.1" id="labelSatFatVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
+                    <span>g</span>
+                  </div>
+                  <div class="flex items-center gap-0.5">
+                    <input type="number" id="labelSatFatPctVal" value="0" class="w-10 text-right text-slate-700 font-mono bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                    <span class="text-slate-700 font-mono">%</span>
+                  </div>
+                </div>
+
+                <!-- 콜레스테롤 -->
+                <div class="flex justify-between items-center py-1.5">
+                  <div class="flex items-center gap-1">
+                    <span class="font-medium">콜레스테롤</span>
+                    <input type="number" id="labelCholesterolVal" value="0" class="w-16 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
+                    <span>mg</span>
+                  </div>
+                  <div class="flex items-center gap-0.5">
+                    <input type="number" id="labelCholesterolPctVal" value="0" class="w-10 text-right text-slate-900 font-mono font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                    <span class="font-bold text-slate-900 font-mono">%</span>
+                  </div>
+                </div>
+
+                <!-- 단백질 -->
+                <div class="flex justify-between items-center py-1.5">
+                  <div class="flex items-center gap-1">
+                    <span class="font-medium">단백질</span>
+                    <input type="number" step="0.1" id="labelProteinVal" value="0" class="w-16 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
+                    <span>g</span>
+                  </div>
+                  <div class="flex items-center gap-0.5">
+                    <input type="number" id="labelProteinPctVal" value="0" class="w-10 text-right text-slate-900 font-mono font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                    <span class="font-bold text-slate-900 font-mono">%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p class="text-[10px] text-slate-500 pt-2.5 mt-2 border-t border-black leading-tight text-right">
+              * 1일 영양성분 기준치에 대한 비율(%)은 2,000 kcal 기준이므로 개인의 필요 열량에 따라 다를 수 있습니다.
+            </p>
+          </div>
+
+          <!-- 우측 영역: 원재료명 및 함량 + 필수 한글 표시사항 -->
+          <div id="col-right-container" class="md:col-span-7 flex flex-col gap-3.5">
+            
+            <!-- 2. 원재료명 및 함량 카드 -->
+            <div id="section-ingredients" class="label-print-card border-2 border-black p-3.5 rounded-xl bg-white text-slate-900 space-y-2">
+              <div class="border-b-2 border-black pb-1.5 flex justify-between items-center">
+                <h4 class="font-black text-xs sm:text-sm tracking-tight text-slate-900">원재료명 및 함량</h4>
+                <span class="text-[10px] text-slate-500">배합비 순서 표기 (클릭하여 편집)</span>
+              </div>
+              <div>
+                <textarea id="labelIngredientsText" rows="3" class="w-full text-xs text-slate-800 leading-relaxed p-2 bg-[#FAF9F6] border border-[#DDD9CE] rounded-lg focus:border-[#385E50] focus:bg-white focus:outline-none resize-y" placeholder="원재료명 및 배합비 내역이 표시됩니다."></textarea>
+              </div>
+              <div class="bg-rose-50 border border-rose-200 px-3 py-2 rounded-lg text-xs text-slate-900 flex items-baseline gap-1.5 flex-wrap">
+                <strong class="text-rose-700 font-bold shrink-0">알레르기 유발 물질:</strong>
+                <input type="text" id="labelAllergensInput" value="해당 없음" class="flex-1 min-w-[160px] font-bold text-rose-800 bg-transparent border-b border-dashed border-rose-300 focus:border-rose-600 focus:outline-none px-1">
+              </div>
+            </div>
+
+            <!-- 3. 식품 표시사항 카드 -->
+            <div id="section-mandatory" class="label-print-card border-2 border-black p-3.5 rounded-xl bg-white text-slate-900 space-y-2 flex-1">
+              <div class="border-b-2 border-black pb-1.5 flex justify-between items-center">
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-600 shrink-0"></span>
+                  <h4 class="font-black text-xs sm:text-sm tracking-tight text-slate-900">식품위생법에 의한 한글 표시사항 (법정 고시 규격)</h4>
+                </div>
+                <span class="text-[10px] text-slate-500 font-medium">10대 법정 필수항목 규격 준수</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs border border-black border-collapse">
+                  <tbody class="divide-y divide-black text-slate-800">
+                    <!-- 1. 제품명 -->
+                    <tr>
+                      <th class="py-1 px-2.5 bg-slate-100 font-bold w-28 text-[11px] border-r border-black shrink-0">
+                        1. 제품명
+                      </th>
+                      <td class="py-1 px-2">
+                        <input type="text" id="labelMandatoryName" value="" placeholder="제품명 입력 (모두 표시)" class="w-full font-extrabold text-[#24282B] bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                      </td>
+                    </tr>
+                    <!-- 2. 식품유형 -->
+                    <tr>
+                      <th class="py-1 px-2.5 bg-slate-100 font-bold w-28 text-[11px] border-r border-black shrink-0">
+                        2. 식품유형
+                      </th>
+                      <td class="py-1 px-2">
+                        <input type="text" id="labelMandatoryType" value="과자 (구움과자류)" placeholder="최소분류 단위 (예: 과자, 빵류)" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                      </td>
+                    </tr>
+                    <!-- 3. 업소명 및 소재지 -->
+                    <tr>
+                      <th class="py-1 px-2.5 bg-slate-100 font-bold w-28 text-[11px] border-r border-black shrink-0">
+                        3. 업소명 및 소재지
+                      </th>
+                      <td class="py-1 px-2">
+                        <input type="text" id="labelMandatoryManufacturer" value="GRAM 베이커리 R&D 랩 (별도 표기)" placeholder="제조원/판매원 상호 및 사업장 소재지" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                      </td>
+                    </tr>
+                    <!-- 4. 제조연월일 -->
+                    <tr>
+                      <th class="py-1 px-2.5 bg-slate-100 font-bold w-28 text-[11px] border-r border-black shrink-0">
+                        4. 제조연월일
+                      </th>
+                      <td class="py-1 px-2">
+                        <input type="text" id="labelMandatoryMfgDate" value="제품 별도 표기일까지 (포장일 당일 제조)" placeholder="즉석섭취식품 또는 별도 표기" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                      </td>
+                    </tr>
+                    <!-- 5. 소비기한 -->
+                    <tr>
+                      <th class="py-1 px-2.5 bg-slate-100 font-bold w-28 text-[11px] border-r border-black shrink-0">
+                        5. 소비기한
+                      </th>
+                      <td class="py-1 px-2">
+                        <input type="text" id="labelMandatoryExpiry" value="" placeholder="소비기한 (모두 표시)" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none font-medium">
+                      </td>
+                    </tr>
+                    <!-- 6. 내용량 -->
+                    <tr>
+                      <th class="py-1 px-2.5 bg-slate-100 font-bold w-28 text-[11px] border-r border-black shrink-0">
+                        6. 내용량
+                      </th>
+                      <td class="py-1 px-2">
+                        <input type="text" id="labelMandatoryWeight" value="" placeholder="내용량 (모두 표시)" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                      </td>
+                    </tr>
+                    <!-- 7. 원재료 및 함량 안내 요약 -->
+                    <tr>
+                      <th class="py-1 px-2.5 bg-slate-100 font-bold w-28 text-[11px] border-r border-black shrink-0 align-top">
+                        7. 원재료 및 함량
+                      </th>
+                      <td class="py-1 px-2">
+                        <input type="text" id="labelMandatoryIngredientsSummary" value="상단 '원재료명 및 함량' 세부 항목 참조 (다량 배합 순 표기)" class="w-full text-slate-700 bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                        <p class="text-[10px] text-slate-500 mt-0.5 leading-tight">※ 원재료는 많이 사용한 순서에 따라 표시하며, 원재료를 제품명에 사용한 경우 그 명칭과 함량(%)을 필수 표기함.</p>
+                      </td>
+                    </tr>
+                    <!-- 8. 용기·포장 재질 -->
+                    <tr>
+                      <th class="py-1 px-2.5 bg-slate-100 font-bold w-28 text-[11px] border-r border-black shrink-0">
+                        8. 용기, 포장 재질
+                      </th>
+                      <td class="py-1 px-2">
+                        <input type="text" id="labelMandatoryPackaging" value="내포장: 폴리프로필렌(OPP), 외포장: 종이" placeholder="용기 및 포장재질 (모두 표시)" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                      </td>
+                    </tr>
+                    <!-- 9. 원산지 -->
+                    <tr>
+                      <th class="py-1 px-2.5 bg-slate-100 font-bold w-28 text-[11px] border-r border-black shrink-0">
+                        9. 원산지
+                      </th>
+                      <td class="py-1 px-2">
+                        <input type="text" id="labelMandatoryOrigin" value="버터(프랑스산), 밀가루(미국산), 계란(국내산), 설탕(국내산)" placeholder="주재료에 대한 원산지 표기" class="w-full font-medium text-slate-800 bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                      </td>
+                    </tr>
+                    <!-- 10. 기타 (보관방법, 법정 주의사항 및 판매 기준) -->
+                    <tr>
+                      <th class="py-1 px-2.5 bg-slate-100 font-bold w-28 text-[11px] border-r border-black shrink-0 align-top">
+                        10. 기타 및 주의사항
+                      </th>
+                      <td class="py-1 px-2 space-y-1.5">
+                        <div class="flex items-center gap-1.5">
+                          <span class="text-[10px] font-bold text-slate-600 shrink-0">보관방법:</span>
+                          <input type="text" id="labelMandatoryStorage" value="직사광선을 피하고 서늘한 실온 또는 밀폐 냉장 보관" class="w-full text-xs bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                        </div>
+                        <div>
+                          <span class="text-[10px] font-bold text-slate-600 block mb-0.5">안내 문구 및 법정 고시 준수사항:</span>
+                          <textarea id="labelMandatoryPrecautions" rows="3" class="w-full text-[11px] text-slate-700 leading-snug bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none resize-none">부정·불량식품 신고는 국번없이 1399
+본 제품은 대두, 견과류, 밀, 우유, 계란을 사용하는 제조시설에서 제조하고 있습니다.
+• 덜어서 판매하는 경우 원래 표시사항 변경 불가 / 배달·택배 제품은 개별 표시 필수</textarea>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- 규정 가이드 박스 (인쇄 시 숨김 no-print) -->
+              <div class="no-print bg-[#FAF9F6] border border-[#E6E4DD] rounded-lg p-2.5 text-[11px] text-[#5E676E] space-y-1">
+                <div class="font-bold text-[#24282B] flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5 text-[#385E50]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  식품 표시 사항 법적 기준 안내
+                </div>
+                <ul class="list-disc list-inside space-y-0.5 text-[10px] text-[#6E7882]">
+                  <li><strong>원재료 및 함량:</strong> 많이 사용한 순서에 따라 표시하며 제품명에 사용된 원재료는 함량(%)을 필히 표기합니다.</li>
+                  <li><strong>원산지:</strong> 농수산물 원산지 표시에 관한 법률에 따라 주요 주재료의 원산지를 명시합니다.</li>
+                  <li><strong>배달/판매:</strong> 배달(택배, 온라인 포함) 제품은 개별 표시 필수이며, 매장 판매 시 진열상자/표지판 게시 시 개별표시를 생략할 수 있습니다.</li>
+                </ul>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
       </div>
 
       <!-- 하단 인쇄 & 복사 액션 버튼 바 (no-print) -->
-      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 mt-4 pt-3 border-t border-[#EFECE6] no-print">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 mt-3 pt-3 border-t border-[#EFECE6] no-print shrink-0">
         <div class="flex items-center gap-2">
           <button onclick="copyCurrentLabelText()" class="px-3.5 py-2 rounded-lg bg-[#FAF9F6] border border-[#DDD9CE] hover:bg-[#EFECE6] text-xs font-bold text-[#24282B] transition">
-            라벨 텍스트 복사
+            라벨 전체 텍스트 복사
           </button>
         </div>
         <div class="flex items-center gap-2">
           <button onclick="printActiveLabelOnly()" class="px-4 py-2 rounded-lg btn-sage-sub text-xs shadow-2xs font-bold">
-            현재 탭만 인쇄
+            선택된 탭만 인쇄
           </button>
           <button onclick="printAllLabels()" class="px-4 py-2 rounded-lg btn-sage-primary text-xs shadow-2xs font-bold">
-            전체 라벨 일괄 인쇄
+            전체 통합 라벨 인쇄
           </button>
         </div>
       </div>
@@ -810,117 +913,288 @@
         const app = initializeApp(firebaseConfig);
         db = getFirestore(app);
         auth = getAuth(app);
+    let activeFoodLabelTab = 'all';
 
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
+    window.switchFoodLabelTab = function(tabName) {
+      activeFoodLabelTab = tabName;
+      const root = document.getElementById('labelPrintRoot');
+      const rightCol = document.getElementById('col-right-container');
+      const secNutrition = document.getElementById('section-nutrition');
+      const secIngredients = document.getElementById('section-ingredients');
+      const secMandatory = document.getElementById('section-mandatory');
+
+      const btns = {
+        all: document.getElementById('tabBtn-all'),
+        nutrition: document.getElementById('tabBtn-nutrition'),
+        ingredients: document.getElementById('tabBtn-ingredients'),
+        mandatory: document.getElementById('tabBtn-mandatory')
+      };
+
+      // 탭 버튼 스타일 갱신
+      Object.keys(btns).forEach(key => {
+        if (!btns[key]) return;
+        if (key === tabName) {
+          btns[key].className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-[#385E50] text-white shadow-2xs";
         } else {
-          await signInAnonymously(auth);
+          btns[key].className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-[#5E676E] hover:text-[#24282B]";
         }
+      });
 
-        onAuthStateChanged(auth, (user) => {
-          if (user) {
-            currentUser = user;
-            isCloudInitialized = true;
-            const syncEl = document.getElementById('syncBadge');
-            if (syncEl) {
-              syncEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>클라우드 동기화 완료`;
-            }
-            setupCloudSyncListeners();
+      if (!root || !secNutrition || !secIngredients || !secMandatory) return;
+
+      if (tabName === 'all') {
+        // 전체 통합 뷰: 2단 최적 그리드 적용
+        root.className = "grid grid-cols-1 md:grid-cols-12 gap-3.5 transition-all";
+        if (rightCol) {
+          rightCol.className = "md:col-span-7 flex flex-col gap-3.5";
+          rightCol.classList.remove('hidden');
+        }
+        secNutrition.className = "label-print-card md:col-span-5 border-2 border-black p-3.5 rounded-xl bg-white text-slate-900 flex flex-col justify-between";
+        secNutrition.classList.remove('hidden');
+        secIngredients.classList.remove('hidden');
+        secMandatory.classList.remove('hidden');
+      } else {
+        // 단일 탭 모드: 화면 중앙 단일 열 뷰로 최적화
+        root.className = "max-w-2xl mx-auto space-y-3 transition-all";
+        
+        if (tabName === 'nutrition') {
+          secNutrition.className = "label-print-card w-full border-2 border-black p-4 rounded-xl bg-white text-slate-900";
+          secNutrition.classList.remove('hidden');
+          if (rightCol) rightCol.classList.add('hidden');
+          secIngredients.classList.add('hidden');
+          secMandatory.classList.add('hidden');
+        } else if (tabName === 'ingredients') {
+          secNutrition.classList.add('hidden');
+          if (rightCol) {
+            rightCol.className = "w-full flex flex-col gap-3.5";
+            rightCol.classList.remove('hidden');
           }
-        });
-      } catch (err) {
-        console.warn("Firebase 로컬 모드 폴백:", err);
-        isCloudInitialized = false;
-        loadInitialState();
-      }
-    }
-
-    const GLOBAL_PRICE_MEMORY_KEY = 'GRAM_GLOBAL_PRICE_MEMORY_V2';
-    const STORAGE_KEY = 'GRAM_CURRENT_RECIPE_V8';
-    const SAVED_RECIPES_KEY = 'GRAM_SAVED_RECIPES_V8';
-
-    function getGlobalPriceMemory() {
-      try {
-        return JSON.parse(localStorage.getItem(GLOBAL_PRICE_MEMORY_KEY) || '{}');
-      } catch(e) { return {}; }
-    }
-
-    function saveGlobalPrice(name, costPerKg) {
-      const memory = getGlobalPriceMemory();
-      const cleanKey = name.toLowerCase().replace(/\s+/g, '');
-      memory[cleanKey] = { name, costPerKg, updatedAt: Date.now() };
-      localStorage.setItem(GLOBAL_PRICE_MEMORY_KEY, JSON.stringify(memory));
-
-      if (isCloudInitialized && currentUser && db) {
-        setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'globalPrices', cleanKey), {
-          name, costPerKg, updatedAt: Date.now()
-        }).catch(e => console.warn(e));
-      }
-    }
-
-    function lookupGlobalPrice(name, defaultCost) {
-      const memory = getGlobalPriceMemory();
-      const cleanKey = name.toLowerCase().replace(/\s+/g, '');
-      if (memory[cleanKey] && memory[cleanKey].costPerKg) {
-        return memory[cleanKey].costPerKg;
-      }
-      return defaultCost;
-    }
-
-    // 기본 제과 물성 및 지식 베이스
-    const INGREDIENT_KNOWLEDGE_BASE = [
-      { keywords: ["버터", "beurre", "butter", "발효버터"], defaultCost: 19500, waterPct: 16.0, fatPct: 82.0, sugarPct: 0.0, isFlour: false, allergen: "우유" },
-      { keywords: ["난백", "흰자", "egg white"], defaultCost: 7500, waterPct: 88.0, fatPct: 0.2, sugarPct: 0.0, isFlour: false, allergen: "계란" },
-      { keywords: ["전란", "달걀", "계란", "egg"], defaultCost: 6500, waterPct: 75.0, fatPct: 10.0, sugarPct: 0.5, isFlour: false, allergen: "계란" },
-      { keywords: ["박력분", "밀가루", "flour"], defaultCost: 3200, waterPct: 14.0, fatPct: 1.2, sugarPct: 0.8, isFlour: true, allergen: "밀" },
-      { keywords: ["설탕", "백설탕", "sugar"], defaultCost: 2400, waterPct: 0.2, fatPct: 0.0, sugarPct: 99.8, isFlour: false, allergen: "" },
-      { keywords: ["아몬드", "아몬드가루", "almond"], defaultCost: 22000, waterPct: 4.8, fatPct: 51.0, sugarPct: 4.5, isFlour: false, allergen: "견과류" },
-      { keywords: ["퓨레", "라즈베리", "라즈베리퓨레"], defaultCost: 24000, waterPct: 84.0, fatPct: 0.5, sugarPct: 10.0, isFlour: false, allergen: "" },
-      { keywords: ["펙틴", "nh펙틴"], defaultCost: 65000, waterPct: 5.0, fatPct: 0.0, sugarPct: 0.0, isFlour: false, allergen: "" },
-      { keywords: ["슈가파우더", "분당"], defaultCost: 3100, waterPct: 0.5, fatPct: 0.0, sugarPct: 98.0, isFlour: false, allergen: "" }
-    ];
-
-    let currentRecipe = {
-      title: "라즈베리 마들렌",
-      portionWeight: 42,
-      bakeLoss: 12.0,
-      targetCostRate: 25,
-      targetYield: 30,
-      subCategories: [
-        {
-          id: 1,
-          name: "마들렌 본반죽",
-          ingredients: [
-            { id: 101, name: "발효 버터", weight: 150, costPerKg: lookupGlobalPrice("발효 버터", 19500), isFlour: false, allergen: "우유" },
-            { id: 102, name: "전란 (달걀)", weight: 150, costPerKg: lookupGlobalPrice("전란", 6500), isFlour: false, allergen: "계란" },
-            { id: 103, name: "박력분", weight: 150, costPerKg: lookupGlobalPrice("박력분", 3200), isFlour: true, allergen: "밀" },
-            { id: 104, name: "백설탕", weight: 130, costPerKg: lookupGlobalPrice("설탕", 2400), isFlour: false, allergen: "" },
-            { id: 105, name: "베이킹파우더", weight: 4, costPerKg: lookupGlobalPrice("베이킹파우더", 6500), isFlour: false, allergen: "" }
-          ]
-        },
-        {
-          id: 2,
-          name: "라즈베리 콤포트",
-          ingredients: [
-            { id: 201, name: "라즈베리 퓨레", weight: 120, costPerKg: lookupGlobalPrice("라즈베리 퓨레", 24000), isFlour: false, allergen: "" },
-            { id: 202, name: "백설탕", weight: 35, costPerKg: lookupGlobalPrice("설탕", 2400), isFlour: false, allergen: "" },
-            { id: 203, name: "NH 펙틴", weight: 3, costPerKg: lookupGlobalPrice("NH 펙틴", 65000), isFlour: false, allergen: "" },
-            { id: 204, name: "레몬즙", weight: 5, costPerKg: lookupGlobalPrice("레몬즙", 9000), isFlour: false, allergen: "" }
-          ]
-        },
-        {
-          id: 3,
-          name: "라즈베리 글라사쥬",
-          ingredients: [
-            { id: 301, name: "슈가파우더", weight: 90, costPerKg: lookupGlobalPrice("슈가파우더", 3100), isFlour: false, allergen: "" },
-            { id: 302, name: "라즈베리 퓨레/과즙", weight: 20, costPerKg: lookupGlobalPrice("라즈베리 퓨레", 24000), isFlour: false, allergen: "" }
-          ]
+          secIngredients.classList.remove('hidden');
+          secMandatory.classList.add('hidden');
+        } else if (tabName === 'mandatory') {
+          secNutrition.classList.add('hidden');
+          if (rightCol) {
+            rightCol.className = "w-full flex flex-col gap-3.5";
+            rightCol.classList.remove('hidden');
+          }
+          secIngredients.classList.add('hidden');
+          secMandatory.classList.remove('hidden');
         }
-      ],
-      packaging: [
-        { id: 901, name: "개별 OPP 봉투", cost: 25, qtyPerPortion: 1 },
-        { id: 902, name: "탈산소제 (에이지리스)", cost: 35, qtyPerPortion: 1 }
-      ]
+      }
+    };
+
+    window.openFoodLabelModal = function() {
+      document.getElementById('foodLabelModal')?.classList.remove('hidden');
+      
+      const titleEl = document.getElementById('labelTitle');
+      if (titleEl) titleEl.value = `영 양 정 보`;
+      
+      const portionW = currentRecipe.portionWeight || 42;
+      const servingEl = document.getElementById('labelServingSize');
+      if (servingEl) servingEl.value = `1회 제공량 ${portionW}g 기준`;
+      
+      // 필수 표시사항 데이터 매핑
+      const mName = document.getElementById('labelMandatoryName');
+      const mWeight = document.getElementById('labelMandatoryWeight');
+      const mExpiry = document.getElementById('labelMandatoryExpiry');
+      const mStorage = document.getElementById('labelMandatoryStorage');
+      const mType = document.getElementById('labelMandatoryType');
+      const mDate = document.getElementById('labelMandatoryMfgDate');
+      const mOrigin = document.getElementById('labelMandatoryOrigin');
+
+      if (mName) mName.value = currentRecipe.title || "구움과자";
+      if (mWeight) mWeight.value = `${portionW}g (총 내용량)`;
+      if (mType && !mType.value) mType.value = "과자 (구움과자류)";
+      if (mDate) mDate.value = "제품 별도 표기일까지 (제조 당일 포장)";
+      
+      // 원산지 기본 자동 매핑
+      if (mOrigin) {
+        const origins = [];
+        const allIngs = getAllIngredients();
+        if (allIngs.some(i => i.name.includes('버터'))) origins.push("버터(프랑스산/유크림 100%)");
+        if (allIngs.some(i => i.name.includes('박력분') || i.name.includes('밀가루'))) origins.push("밀가루(미국산)");
+        if (allIngs.some(i => i.name.includes('계란') || i.name.includes('달걀') || i.name.includes('난백') || i.name.includes('전란'))) origins.push("계란(국내산)");
+        if (allIngs.some(i => i.name.includes('설탕'))) origins.push("설탕(국내산)");
+        if (allIngs.some(i => i.name.includes('퓨레') || i.name.includes('라즈베리'))) origins.push("라즈베리퓨레(프랑스산)");
+        mOrigin.value = origins.length > 0 ? origins.join(', ') : "주재료 원산지 별도 표기";
+      }
+      
+      // 수분 활성도에 따른 보관 및 소비기한 자동 권고
+      const awText = document.getElementById('statAwValue')?.innerText || '0.72 aw';
+      const prompt = `대한민국 식품위생법 및 '식품등의 표시기준' 고시(연번 1~10번 기준)에 맞추어 다음 제과 완제품의 라벨 표시사항을 정밀 분석하고 JSON 구조로 작성해 주십시오.
+
+[제품 데이터]
+- 제품명: ${title}
+- 1개당 완제 중량: ${portionW}g
+- 예측 수분 활성도(Aw): ${awText}
+- 배합 재료 목록: ${ingSummary}
+
+[법정 표시기준 준수 항목 (연번 1~10)]
+1. 제품명: ${title}
+2. 식품유형: 식품의 기준 및 규격의 최소분류 단위로 지정 (예: 과자, 빵류, 케이크류 등)
+3. 업소명 및 소재지: 제조원 및 판매원 표기 규격
+4. 제조연월일: 즉석섭취식품 여부 및 제조 표기 기준 안내
+5. 소비기한: 수분 활성도(${awText}) 및 포장 형태를 감안한 법적 권장 소비기한
+6. 내용량: ${portionW}g
+7. 원재료 및 함량: 많이 사용한 순서에 따라 원재료를 정렬하고, 제품명에 원재료명이 포함된 경우 해당 함량(%)을 정확히 계산하여 표기
+8. 용기·포장 재질: 내포장 및 외포장 재질 규격 (예: 폴리프로필렌: OPP 등)
+9. 원산지: 주요 주재료(버터, 밀가루, 계란, 설탕, 과일 등)의 합리적인 원산지 표기
+10. 기타: 보관방법(실온/냉장/냉동), 식품 알레르기 유발물질, 법적 주의사항(부정불량식품 신고 1399 및 시설 교차오염), 매장 판매 및 배달 시 주의사항 문구
+11. 영양성분 9종(열량, 나트륨, 탄수화물, 당류, 지방, 포화지방, 트랜스지방, 콜레스테롤, 단백질) 추정치`;
+
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              responseMimeType: "application/json",
+              temperature: 0.1,
+              responseSchema: {
+                type: "OBJECT",
+                properties: {
+                  foodType: { type: "STRING" },
+                  manufacturer: { type: "STRING" },
+                  mfgDateNotice: { type: "STRING" },
+                  expiryNotice: { type: "STRING" },
+                  storageNotice: { type: "STRING" },
+                  originText: { type: "STRING" },
+                  packagingMaterial: { type: "STRING" },
+                  ingredientsText: { type: "STRING" },
+                  allergens: { type: "STRING" },
+                  precautions: { type: "STRING" },
+                  calories: { type: "NUMBER" },
+                  sodiumMg: { type: "NUMBER" },
+                  carbsG: { type: "NUMBER" },
+                  sugarG: { type: "NUMBER" },
+                  fatG: { type: "NUMBER" },
+                  satFatG: { type: "NUMBER" },
+                  transFatG: { type: "NUMBER" },
+                  cholesterolMg: { type: "NUMBER" },
+                  proteinG: { type: "NUMBER" }
+                },
+                required: ["foodType", "expiryNotice", "storageNotice", "ingredientsText", "allergens", "calories", "originText"]
+              }
+            }
+          })
+        });
+
+        if (!response.ok) throw new Error(`API HTTP Error: ${response.status}`);
+        const result = await response.json();
+        const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!jsonText) throw new Error("AI 응답을 받지 못했습니다.");
+
+        const aiData = JSON.parse(jsonText);
+        applyAiDraftToFields(aiData);
+        showToast("AI가 법정 고시 10대 규격 라벨을 작성했습니다. 자유롭게 수정하실 수 있습니다.");
+      } catch (err) {
+        console.warn("AI 라벨 생성 대체:", err);
+        showToast("기본 수치 매핑이 유지되었습니다.");
+      } finally {
+        if (btn) btn.disabled = false;
+        if (spinner) spinner.classList.add('hidden');
+        if (btnText) btnText.innerText = "AI 라벨 재분석";
+      }
+    };
+
+    function applyAiDraftToFields(data) {
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && val !== undefined && val !== null) el.value = val;
+      };
+
+      if (data.foodType) setVal('labelMandatoryType', data.foodType);
+      if (data.manufacturer) setVal('labelMandatoryManufacturer', data.manufacturer);
+      if (data.mfgDateNotice) setVal('labelMandatoryMfgDate', data.mfgDateNotice);
+      if (data.expiryNotice) setVal('labelMandatoryExpiry', data.expiryNotice);
+      if (data.storageNotice) setVal('labelMandatoryStorage', data.storageNotice);
+      if (data.originText) setVal('labelMandatoryOrigin', data.originText);
+      if (data.packagingMaterial) setVal('labelMandatoryPackaging', data.packagingMaterial);
+      if (data.ingredientsText) setVal('labelIngredientsText', data.ingredientsText);
+      if (data.allergens) setVal('labelAllergensInput', data.allergens);
+      if (data.precautions) setVal('labelMandatoryPrecautions', data.precautions);
+
+      if (data.calories !== undefined) setVal('labelCaloriesVal', Math.round(data.calories));
+      if (data.sodiumMg !== undefined) {
+        setVal('labelSodiumVal', Math.round(data.sodiumMg));
+        setVal('labelSodiumPctVal', Math.round((data.sodiumMg / 2000) * 100));
+      }
+      if (data.carbsG !== undefined) {
+        setVal('labelCarbsVal', Number(data.carbsG).toFixed(1));
+        setVal('labelCarbsPctVal', Math.round((data.carbsG / 324) * 100));
+      }
+      if (data.sugarG !== undefined) {
+        setVal('labelSugarVal', Number(data.sugarG).toFixed(1));
+        setVal('labelSugarPctVal', Math.round((data.sugarG / 100) * 100));
+      }
+      if (data.fatG !== undefined) {
+        setVal('labelFatVal', Number(data.fatG).toFixed(1));
+        setVal('labelFatPctVal', Math.round((data.fatG / 54) * 100));
+      }
+      if (data.satFatG !== undefined) {
+        setVal('labelSatFatVal', Number(data.satFatG).toFixed(1));
+        setVal('labelSatFatPctVal', Math.round((data.satFatG / 15) * 100));
+      }
+      if (data.transFatG !== undefined) {
+        setVal('labelTransFatVal', Number(data.transFatG).toFixed(1));
+      }
+      if (data.cholesterolMg !== undefined) {
+        setVal('labelCholesterolVal', Math.round(data.cholesterolMg));
+        setVal('labelCholesterolPctVal', Math.round((data.cholesterolMg / 300) * 100));
+      }
+      if (data.proteinG !== undefined) {
+        setVal('labelProteinVal', Number(data.proteinG).toFixed(1));
+        setVal('labelProteinPctVal', Math.round((data.proteinG / 55) * 100));
+      }
+    }
+
+    window.copyCurrentLabelText = function() {
+      const getVal = id => document.getElementById(id)?.value || '';
+      let text = '';
+
+      if (activeFoodLabelTab === 'nutrition' || activeFoodLabelTab === 'all') {
+        text += `[${getVal('labelTitle')}] (${getVal('labelServingSize')})\n`;
+        text += `• 열량: ${getVal('labelCaloriesVal')} kcal\n`;
+        text += `• 나트륨: ${getVal('labelSodiumVal')}mg (${getVal('labelSodiumPctVal')}%)\n`;
+        text += `• 탄수화물: ${getVal('labelCarbsVal')}g (${getVal('labelCarbsPctVal')}%)\n`;
+        text += `  - 당류: ${getVal('labelSugarVal')}g (${getVal('labelSugarPctVal')}%)\n`;
+        text += `• 지방: ${getVal('labelFatVal')}g (${getVal('labelFatPctVal')}%)\n`;
+        text += `  - 트랜스지방: ${getVal('labelTransFatVal')}g\n`;
+        text += `  - 포화지방: ${getVal('labelSatFatVal')}g (${getVal('labelSatFatPctVal')}%)\n`;
+        text += `• 콜레스테롤: ${getVal('labelCholesterolVal')}mg (${getVal('labelCholesterolPctVal')}%)\n`;
+        text += `• 단백질: ${getVal('labelProteinVal')}g (${getVal('labelProteinPctVal')}%)\n\n`;
+      }
+
+      if (activeFoodLabelTab === 'ingredients' || activeFoodLabelTab === 'all') {
+        text += `[원재료명 및 함량 (많이 사용한 순서 표기)]\n${getVal('labelIngredientsText')}\n`;
+        text += `• 알레르기 유발 물질: ${getVal('labelAllergensInput')}\n\n`;
+      }
+
+      if (activeFoodLabelTab === 'mandatory' || activeFoodLabelTab === 'all') {
+        text += `[식품 표시 사항 (법정 고시 10대 규격)]\n`;
+        text += `1. 제품명: ${getVal('labelMandatoryName')}\n`;
+        text += `2. 식품유형: ${getVal('labelMandatoryType')}\n`;
+        text += `3. 업소명 및 소재지: ${getVal('labelMandatoryManufacturer')}\n`;
+        text += `4. 제조연월일: ${getVal('labelMandatoryMfgDate')}\n`;
+        text += `5. 소비기한: ${getVal('labelMandatoryExpiry')}\n`;
+        text += `6. 내용량: ${getVal('labelMandatoryWeight')}\n`;
+        text += `7. 원재료 및 함량: ${getVal('labelMandatoryIngredientsSummary')}\n`;
+        text += `8. 용기, 포장 재질: ${getVal('labelMandatoryPackaging')}\n`;
+        text += `9. 원산지: ${getVal('labelMandatoryOrigin')}\n`;
+        text += `10. 기타:\n  - 보관방법: ${getVal('labelMandatoryStorage')}\n  - 주의사항 및 준수사항:\n${getVal('labelMandatoryPrecautions')}\n`;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = text.trim();
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      showToast("법정 고시 규격 라벨 텍스트가 복사되었습니다.");
     };
 
     function ensureHierarchicalStructure(recipe) {
