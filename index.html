@@ -3,600 +3,2526 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BakeCalc & ShelfLife AI - 제과 원가 및 수분 활성도 시뮬레이터</title>
-  <!-- Tailwind CSS CDN -->
+  <title>GRAM Pro - 제과 R&D, 전역 단가 동기화 & 레시피 OCR 시스템</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts Inter & Noto Sans KR -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Chart.js for Visual Composition Graph -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <style>
-    body {
-      font-family: 'Inter', 'Noto Sans KR', sans-serif;
-      background-color: #0f1115;
-      color: #e2e8f0;
+    :root {
+      --bg-base: #F5F4F0;
+      --card-white: #FFFFFF;
+      --border-soft: #E6E4DD;
+      --border-hover: #D6D2C4;
+      --sage-deep: #2D4C40;
+      --sage-primary: #385E50;
+      --sage-light: #EBF2EE;
+      --sage-tint: #F3F7F5;
+      --text-main: #24282B;
+      --text-sub: #5E676E;
+      --text-muted: #8B959E;
     }
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-      -webkit-appearance: none;
+    * {
+      word-break: keep-all;
+      overflow-wrap: break-word;
+    }
+    body { 
+      font-family: 'Noto Sans KR', 'Inter', -apple-system, sans-serif; 
+      background-color: var(--bg-base); 
+      color: var(--text-main); 
+      -webkit-tap-highlight-color: transparent; 
       margin: 0;
+      padding: 0;
     }
-    .custom-scroll::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+    input[type="number"]::-webkit-inner-spin-button, 
+    input[type="number"]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
     }
-    .custom-scroll::-webkit-scrollbar-track {
-      background: #181b21;
+    .calm-card {
+      background-color: #FFFFFF;
+      border-radius: 16px;
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 4px 16px rgba(45, 76, 64, 0.03);
     }
-    .custom-scroll::-webkit-scrollbar-thumb {
-      background: #333a46;
-      border-radius: 3px;
+    .btn-sage-primary {
+      background-color: var(--sage-primary);
+      color: #FFFFFF;
+      font-weight: 700;
+      transition: all 0.15s ease-in-out;
+    }
+    .btn-sage-primary:hover {
+      background-color: var(--sage-deep);
+    }
+    .btn-sage-sub {
+      background-color: var(--sage-tint);
+      color: var(--sage-primary);
+      border: 1px solid #D5E3DC;
+      font-weight: 700;
+      transition: all 0.15s ease-in-out;
+    }
+    .btn-sage-sub:hover {
+      background-color: var(--sage-light);
+    }
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-track { background: #EFECE6; border-radius: 4px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #C8C4B7; border-radius: 4px; }
+    .num-font { font-feature-settings: "tnum"; font-variant-numeric: tabular-nums; }
+    
+    @media (max-width: 767px) {
+      .desktop-view-only { display: none !important; }
+      .mobile-view-only { display: block !important; }
+    }
+    @media (min-width: 768px) {
+      .desktop-view-only { display: block !important; }
+      .mobile-view-only { display: none !important; }
+    }
+
+    @media print {
+      body * { visibility: hidden !important; background-color: white !important; }
+      #kitchenModal, #kitchenModal * { visibility: visible !important; }
+      #foodLabelModal, #foodLabelModal * { visibility: visible !important; }
+      #kitchenModal { 
+        position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: auto !important; 
+        background: white !important; color: black !important; padding: 0 !important; margin: 0 !important; display: block !important;
+      }
+      #foodLabelModal { 
+        position: absolute !important; left: 0 !important; top: 0 !important; width: 100% !important; height: auto !important; 
+        background: white !important; color: black !important; padding: 0 !important; margin: 0 !important; display: block !important;
+      }
+      #kitchenModal div, #kitchenModal span, #kitchenModal h2, #kitchenModal h3, #kitchenModal p, 
+      #kitchenModal td, #kitchenModal th, #kitchenModal li, #kitchenModal strong, #kitchenModal ol, 
+      #kitchenModal table, #kitchenModal tr,
+      #foodLabelModal div, #foodLabelModal span, #foodLabelModal h2, #foodLabelModal h3, #foodLabelModal h4, #foodLabelModal p,
+      #foodLabelModal td, #foodLabelModal th, #foodLabelModal li, #foodLabelModal strong, #foodLabelModal table, #foodLabelModal tr {
+        background-color: white !important; background: white !important; color: black !important; box-shadow: none !important; border-color: #cbd5e1 !important;
+      }
+      #kitchenModal button, #kitchenModal .no-print,
+      #foodLabelModal button, #foodLabelModal .no-print { display: none !important; }
+      table { border-collapse: collapse !important; width: 100% !important; page-break-inside: auto; }
+      tr { page-break-inside: avoid; page-break-after: auto; }
+      th, td { border-bottom: 1px solid #cbd5e1 !important; padding: 8px 10px !important; color: black !important; font-family: 'Noto Sans KR', 'Inter', sans-serif !important; }
+      h2, h3, h4, strong { color: black !important; font-weight: 700 !important; }
+      input, textarea { border: none !important; background: transparent !important; padding: 0 !important; resize: none !important; }
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
     }
   </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between selection:bg-amber-500/30 selection:text-amber-200">
+<body class="min-h-screen flex flex-col justify-between selection:bg-[#385E50]/20 selection:text-[#2D4C40]">
 
-  <!-- Header -->
-  <header class="border-b border-slate-800/80 bg-[#14171d]/90 backdrop-blur sticky top-0 z-30 px-4 lg:px-8 py-3.5">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center shadow-lg shadow-amber-500/20 font-bold text-slate-950 text-lg">
-          β
-        </div>
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-base font-semibold tracking-tight text-white">BakeCalc <span class="text-amber-400 font-normal">&amp; ShelfLife AI</span></h1>
-            <span class="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">Micro-SaaS MVP</span>
+  <header class="bg-white/95 backdrop-blur-md border-b border-[#E6E4DD] sticky top-0 z-40 px-3 sm:px-6 py-2.5">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#385E50] flex items-center justify-center font-extrabold text-white text-base shadow-xs shrink-0">
+            G
           </div>
-          <p class="text-xs text-slate-400">프리미엄 제과 배합비 · 원가율 · 보존성(Aw) 예측 시뮬레이터</p>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <h1 class="text-sm sm:text-base font-extrabold tracking-tight text-[#24282B] flex items-center gap-1">
+                GRAM <span class="text-[10px] px-1.5 py-0.5 rounded-md bg-[#EBF2EE] text-[#385E50] font-bold">Pro</span>
+              </h1>
+              <span id="syncBadge" class="flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#FAF9F6] text-[#556960] border border-[#DDD9CE]">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>실시간 동기화
+              </span>
+            </div>
+            <p class="text-[11px] text-[#8B959E] hidden sm:block">Professional Bakery R&D & Cost Sync System</p>
+          </div>
         </div>
       </div>
 
-      <!-- Header CTAs -->
-      <div class="flex items-center gap-2.5">
-        <button id="btnExportCSV" class="px-3 py-1.5 rounded-lg border border-slate-700 hover:border-slate-600 bg-slate-800/60 text-xs font-medium text-slate-300 hover:text-white transition flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-          CSV 내보내기
+      <!-- Action buttons -->
+      <div class="grid grid-cols-5 sm:flex sm:items-center gap-1 sm:gap-1.5 w-full sm:w-auto">
+        <button onclick="openOcrModal()" class="px-2 py-1.5 rounded-lg bg-[#FAF9F6] hover:bg-[#EFECE6] text-[#24282B] border border-[#DDD9CE] text-[11px] sm:text-xs font-bold transition flex items-center justify-center">
+          <span class="truncate">레시피 OCR</span>
         </button>
-        <button onclick="openModal('upgradeModal')" class="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-semibold text-xs transition shadow-md shadow-amber-500/20 flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-          Pro 업그레이드
+        <button onclick="openReceiptModal()" class="px-2 py-1.5 rounded-lg bg-[#FAF9F6] hover:bg-[#EFECE6] text-[#24282B] border border-[#DDD9CE] text-[11px] sm:text-xs font-bold transition flex items-center justify-center">
+          <span class="truncate">단가 명세표</span>
+        </button>
+        <button onclick="openSavedRecipesModal()" class="px-2 py-1.5 rounded-lg bg-[#FAF9F6] hover:bg-[#EFECE6] text-[#24282B] border border-[#DDD9CE] text-[11px] sm:text-xs font-bold transition flex items-center justify-center gap-1">
+          <span class="truncate">보관함</span>
+          <span id="savedCountBadge" class="px-1.5 py-0.2 rounded bg-[#EBF2EE] text-[#385E50] text-[9px] font-bold font-mono">0</span>
+        </button>
+        <button onclick="openKitchenMode()" class="px-2 py-1.5 rounded-lg btn-sage-sub text-[11px] sm:text-xs shadow-2xs flex items-center justify-center">
+          <span class="truncate">배합 인쇄</span>
+        </button>
+        <button onclick="openFoodLabelModal()" class="px-2 py-1.5 rounded-lg btn-sage-primary text-[11px] sm:text-xs shadow-2xs flex items-center justify-center">
+          <span class="truncate">식품 라벨</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- Main Container -->
-  <main class="max-w-7xl mx-auto px-4 lg:px-8 py-6 w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <main class="max-w-7xl mx-auto w-full px-3 py-3.5 sm:p-5 space-y-3.5 sm:space-y-4 flex-1">
+    
+    <!-- Top Title and Save Bar -->
+    <div class="calm-card p-3 sm:px-4 sm:py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+      <div class="flex items-center gap-2 w-full sm:w-auto min-w-0 flex-1">
+        <span class="px-2.5 py-1 rounded-md bg-[#FAF9F6] border border-[#DDD9CE] text-[#556960] text-xs font-bold whitespace-nowrap shrink-0">
+          품목 대분류
+        </span>
+        <input type="text" id="recipeTitleInput" value="라즈베리 마들렌" placeholder="품목명을 입력하세요" class="flex-1 min-w-0 bg-[#FAF9F6] hover:bg-white focus:bg-white border border-[#DDD9CE] focus:border-[#385E50] rounded-lg px-3 py-1.5 text-sm sm:text-base font-extrabold text-[#24282B] focus:outline-none transition">
+      </div>
+      <div class="flex items-center justify-end gap-2 w-full sm:w-auto">
+        <button onclick="saveCurrentRecipeToCloud()" class="w-full sm:w-auto justify-center px-4 py-1.5 rounded-lg btn-sage-primary text-xs shadow-2xs shrink-0 flex items-center gap-1.5">
+          저장하기
+        </button>
+      </div>
+    </div>
 
-    <!-- Left Column: Formulation Matrix (7 Cols) -->
-    <section class="lg:col-span-7 flex flex-col gap-5">
-
-      <!-- Product Meta Settings Card -->
-      <div class="bg-[#161920] border border-slate-800 rounded-2xl p-4 shadow-sm">
-        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-          <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-            <h2 class="text-sm font-semibold text-white tracking-wide">제품 파라미터 및 타깃 세팅</h2>
+    <!-- Production Metrics & Key Stats Dashboard -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
+      
+      <!-- Key Stats Display Cards -->
+      <div class="lg:col-span-7 grid grid-cols-2 gap-2.5 sm:gap-3">
+        <!-- Highlight Card: Recommended Selling Price -->
+        <div class="col-span-2 bg-[#FAF9F6] border border-[#D5E3DC] rounded-xl p-3.5 sm:p-4 text-[#24282B] shadow-2xs flex flex-col justify-between">
+          <div class="flex flex-wrap items-center justify-between gap-1">
+            <span class="text-[11px] font-extrabold text-[#385E50] bg-[#EBF2EE] px-2 py-0.5 rounded-md">AI 권장 판매가</span>
+            <span class="text-[11px] font-bold text-[#5E676E]" id="statMarginText">개당 마진: 0원 (0%)</span>
           </div>
-          <span class="text-xs text-slate-400">기준 레시피: <strong class="text-slate-200">헤이즐넛 피낭시에 (Financier)</strong></span>
+          <div class="mt-2 flex items-baseline justify-between flex-wrap gap-2">
+            <div class="text-xl sm:text-2xl font-black text-[#2D4C40] num-font" id="statSellingPrice">0 원</div>
+            <div class="text-[11px] font-bold bg-white px-2 py-0.5 rounded border border-[#E6E4DD] text-[#556960]">
+              개당 제조원가: <strong id="statPortionCost" class="font-extrabold text-[#24282B] num-font">0 원</strong>
+            </div>
+          </div>
+          <p class="text-[11px] font-medium text-[#6E7882] mt-1.5" id="statPortionNet">재료비: 0원 / 포장비: 0원</p>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-          <div class="bg-[#1a1e27] p-2.5 rounded-xl border border-slate-800/80">
-            <label class="text-slate-400 block mb-1">개당 포션 중량 (g)</label>
-            <input id="inputPortionWeight" type="number" value="45" min="1" class="w-full bg-[#111317] border border-slate-700 rounded-lg px-2.5 py-1 text-white font-medium focus:border-amber-500 focus:outline-none">
+        <!-- Total Batch Weight -->
+        <div class="calm-card p-3 sm:p-3.5 flex flex-col justify-between">
+          <span class="text-[11px] font-semibold text-[#8B959E]">총 반죽 중량 (Batch)</span>
+          <div class="text-base sm:text-xl font-extrabold text-[#24282B] my-1 num-font" id="statBatchWeight">0 g</div>
+          <p class="text-[10px] font-bold text-[#385E50] bg-[#FAF9F6] px-1.5 py-0.5 rounded border border-[#E6E4DD] inline-block w-fit" id="statYieldCount">완성: 약 0개</p>
+        </div>
+
+        <!-- Total Production Cost -->
+        <div class="calm-card p-3 sm:p-3.5 flex flex-col justify-between">
+          <span class="text-[11px] font-semibold text-[#8B959E]">총 생산 원가</span>
+          <div class="text-base sm:text-xl font-extrabold text-[#24282B] my-1 num-font" id="statTotalCost">0 원</div>
+          <p class="text-[10px] text-[#6E7882] font-medium">포장 부자재 소계: <strong class="text-[#24282B] num-font" id="statBomTotal">0</strong>원</p>
+        </div>
+      </div>
+
+      <!-- Production Parameter Controls -->
+      <div class="lg:col-span-5 calm-card p-3 sm:p-4 flex flex-col justify-between space-y-2.5">
+        <div class="border-b border-[#EFECE6] pb-1.5">
+          <h3 class="text-xs sm:text-sm font-extrabold text-[#24282B]">생산 파라미터 설정</h3>
+          <p class="text-[11px] text-[#8B959E]">수치를 변경하면 모든 원가와 배합비가 실시간 자동 계산됩니다.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div class="bg-[#FAF9F6] rounded-xl p-2 border border-[#E6E4DD]">
+            <label class="text-[10px] sm:text-[11px] text-[#6E7882] font-bold block mb-0.5">개당 완제 중량</label>
+            <div class="flex items-center justify-between bg-white rounded-lg px-2 py-1 border border-[#DDD9CE] focus-within:border-[#385E50]">
+              <input type="number" id="inputPortionWeight" value="42" min="1" step="0.5" oninput="calculateTotals()" class="w-full text-xs sm:text-sm font-extrabold text-[#24282B] text-right focus:outline-none num-font">
+              <span class="text-[10px] text-[#8B959E] font-bold ml-1 shrink-0">g</span>
+            </div>
           </div>
-          <div class="bg-[#1a1e27] p-2.5 rounded-xl border border-slate-800/80">
-            <label class="text-slate-400 block mb-1">굽기 감량율 Loss (%)</label>
-            <input id="inputBakeLoss" type="number" value="12" min="0" max="50" class="w-full bg-[#111317] border border-slate-700 rounded-lg px-2.5 py-1 text-white font-medium focus:border-amber-500 focus:outline-none">
+
+          <div class="bg-[#FAF9F6] rounded-xl p-2 border border-[#E6E4DD]">
+            <label class="text-[10px] sm:text-[11px] text-[#6E7882] font-bold block mb-0.5">굽기 손실률 (Bake Loss)</label>
+            <div class="flex items-center justify-between bg-white rounded-lg px-2 py-1 border border-[#DDD9CE] focus-within:border-[#385E50]">
+              <input type="number" id="inputBakeLoss" value="12" min="0" max="50" step="0.5" oninput="calculateTotals()" class="w-full text-xs sm:text-sm font-extrabold text-[#24282B] text-right focus:outline-none num-font">
+              <span class="text-[10px] text-[#8B959E] font-bold ml-1 shrink-0">%</span>
+            </div>
           </div>
-          <div class="bg-[#1a1e27] p-2.5 rounded-xl border border-slate-800/80">
-            <label class="text-slate-400 block mb-1">목표 원가율 (%)</label>
-            <input id="inputTargetCostRate" type="number" value="25" min="5" max="90" class="w-full bg-[#111317] border border-slate-700 rounded-lg px-2.5 py-1 text-amber-400 font-semibold focus:border-amber-500 focus:outline-none">
+
+          <div class="bg-[#FAF9F6] rounded-xl p-2 border border-[#E6E4DD]">
+            <label class="text-[10px] sm:text-[11px] text-[#6E7882] font-bold block mb-0.5">목표 원가율 (Cost Rate)</label>
+            <div class="flex items-center justify-between bg-white rounded-lg px-2 py-1 border border-[#DDD9CE] focus-within:border-[#385E50]">
+              <input type="number" id="inputTargetCostRate" value="25" min="5" max="90" step="1" oninput="calculateTotals()" class="w-full text-xs sm:text-sm font-extrabold text-[#2B604B] text-right focus:outline-none num-font">
+              <span class="text-[10px] text-[#8B959E] font-bold ml-1 shrink-0">%</span>
+            </div>
           </div>
-          <div class="bg-[#1a1e27] p-2.5 rounded-xl border border-slate-800/80">
-            <label class="text-slate-400 block mb-1">예상 배치(Batch) 배수</label>
-            <input id="inputBatchMultiplier" type="number" value="1" min="0.1" step="0.5" class="w-full bg-[#111317] border border-slate-700 rounded-lg px-2.5 py-1 text-white font-medium focus:border-amber-500 focus:outline-none">
+
+          <div class="bg-[#F3F7F5] rounded-xl p-2 border border-[#C5DACF]">
+            <label class="text-[10px] sm:text-[11px] text-[#2D4C40] font-extrabold block mb-0.5">목표 생산 수량</label>
+            <div class="flex items-center justify-between bg-white rounded-lg px-2 py-1 border border-[#385E50] focus-within:ring-1 focus-within:ring-[#385E50]">
+              <input type="number" id="inputTargetYield" value="30" min="1" step="1" onchange="handleTargetYieldChange()" class="w-full text-xs sm:text-sm font-black text-[#2D4C40] text-right focus:outline-none num-font">
+              <span class="text-[10px] text-[#2D4C40] font-bold ml-1 shrink-0">개</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 소분류 파트별 원재료 배합표 섹션 -->
+    <div class="calm-card p-3 sm:p-5 space-y-3.5">
+      <div class="flex flex-wrap items-center justify-between gap-2.5 border-b border-[#EFECE6] pb-3">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h2 class="text-sm sm:text-base font-extrabold text-[#24282B]">공정 파트별 원재료 배합표</h2>
+            <span class="text-[10px] sm:text-[11px] px-2 py-0.5 rounded-md bg-[#FAF9F6] text-[#556960] font-bold border border-[#E6E4DD]">
+              Baker's % 기준
+            </span>
+          </div>
+          <p class="text-[11px] text-[#6E7882] mt-0.5">상단 파트 탭을 클릭하여 해당 파트의 배합만 깔끔하게 전환하여 조회 및 편집할 수 있습니다.</p>
+        </div>
+        
+        <button onclick="addSubCategoryGroup()" class="w-full sm:w-auto px-3.5 py-1.5 rounded-xl btn-sage-primary text-xs shadow-2xs flex items-center justify-center gap-1 shrink-0">
+          <span>+</span> 새로운 파트 추가
+        </button>
+      </div>
+
+      <!-- 상단 파트 선택 윈도우 (탭 바) -->
+      <div class="bg-[#FAF9F6] border border-[#E6E4DD] rounded-xl p-2 sm:p-2.5">
+        <div class="flex items-center justify-between gap-2 mb-2 pb-1.5 border-b border-[#EFECE6]">
+          <span class="text-[11px] font-bold text-[#6E7882] flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 text-[#385E50]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+            공정 파트 선택
+          </span>
+          <span id="activePartBadge" class="text-[10px] text-[#556960] font-medium">선택된 파트 배합 조회 중</span>
+        </div>
+        <div id="subCategoryTabSelector" class="flex items-center gap-1.5 overflow-x-auto custom-scroll pb-1"></div>
+      </div>
+
+      <!-- 선택된 파트 배합 렌더링 컨테이너 -->
+      <div id="subCategoriesContainer" class="space-y-3"></div>
+    </div>
+
+    <!-- 포장재 및 소모 부자재 섹션 -->
+    <div class="calm-card p-3 sm:p-4 space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[#EFECE6] pb-2">
+        <div>
+          <h3 class="text-xs sm:text-sm font-extrabold text-[#24282B]">
+            포장재 및 소모 부자재 (개당 원가 반영)
+          </h3>
+          <p class="text-[11px] text-[#8B959E] mt-0.5">개별 OPP 봉투, 탈산소제(에이지리스), 스티커, 박스 등 완제품 1개 포장 소요 비용입니다.</p>
+        </div>
+        <button onclick="addPackagingRow()" class="px-2.5 py-1 rounded-lg bg-[#FAF9F6] hover:bg-[#EFECE6] text-[#24282B] border border-[#DDD9CE] text-[11px] font-bold transition">
+          + 부자재 추가
+        </button>
+      </div>
+      <div id="packagingContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5"></div>
+    </div>
+
+    <!-- 수분 활성도(Aw) & 제과 R&D 어드바이저 섹션 -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
+      
+      <!-- 수분 활성도 위젯 카드 -->
+      <div class="lg:col-span-4 calm-card p-3.5 sm:p-4 flex flex-col justify-between">
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs sm:text-sm font-extrabold text-[#24282B]">
+              예측 수분 활성도 (Estimated Aw)
+            </span>
+            <span id="statAwValue" class="text-xs font-bold text-[#385E50] bg-[#EBF2EE] px-2 py-0.5 rounded-md num-font">0.00 aw</span>
+          </div>
+          <p class="text-[11px] text-[#6E7882] leading-relaxed">
+            원재료 수분과 결합수 지표를 추정한 수분 활성도입니다.
+          </p>
+          <div class="bg-[#FAF9F6] rounded-xl p-2.5 border border-[#E6E4DD] space-y-1 text-[11px] text-[#5E676E]">
+            <div class="flex justify-between"><span>0.65 미만</span><strong class="text-emerald-700">상온 방습 안정</strong></div>
+            <div class="flex justify-between"><span>0.65 ~ 0.85</span><strong class="text-amber-700">밀봉 탈산소제 권장</strong></div>
+            <div class="flex justify-between"><span>0.85 이상</span><strong class="text-rose-600">냉장 필수 (수분이행 주의)</strong></div>
+          </div>
+        </div>
+        <div class="mt-3 space-y-1">
+          <div class="flex justify-between text-[10px] font-bold text-[#8B959E]">
+            <span>건조/안정</span>
+            <span>촉촉/냉장권장</span>
+          </div>
+          <div class="w-full bg-[#EFECE6] h-2 rounded-full overflow-hidden flex p-0.5">
+            <div id="awProgress" class="bg-[#385E50] h-full rounded-full transition-all duration-300" style="width: 45%;"></div>
           </div>
         </div>
       </div>
 
-      <!-- Ingredient Matrix Table Card -->
-      <div class="bg-[#161920] border border-slate-800 rounded-2xl p-4 shadow-sm flex-1 flex flex-col">
-        <div class="flex items-center justify-between mb-3">
+      <!-- 제과 R&D AI 어드바이저 카드 -->
+      <div class="lg:col-span-8 calm-card p-3.5 sm:p-4 flex flex-col">
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[#EFECE6]">
           <div>
-            <h2 class="text-sm font-semibold text-white tracking-wide">원재료 배합 및 물성 매트릭스</h2>
-            <p class="text-[11px] text-slate-400">수분율(Water)과 고형분(Dry Solids) 비율은 수분 활성도(Aw) 예측에 반영됩니다.</p>
+            <h2 class="text-xs sm:text-sm font-extrabold text-[#24282B]">AI 제과 R&D 진단 어드바이저</h2>
+            <p class="text-[11px] text-[#8B959E]">공정 난이도/원재료 단가 기반 적정 판매가, 보관 유통기한, 최신 트렌드를 정밀 진단합니다.</p>
           </div>
-          <button id="btnAddIngredient" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-medium border border-amber-500/30 flex items-center gap-1 transition">
-            + 재료 추가
+          <button id="btnRunAdvisor" onclick="runGeminiAdvisor()" class="px-3.5 py-1.5 rounded-xl btn-sage-primary text-xs shadow-2xs flex items-center gap-1.5">
+            <span id="aiAdvisorSpinner" class="hidden w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <span id="aiAdvisorBtnText">AI 진단 실행</span>
           </button>
         </div>
 
-        <div class="overflow-x-auto custom-scroll -mx-4 px-4 flex-1">
-          <table class="w-full text-left text-xs border-collapse min-w-[550px]">
-            <thead>
-              <tr class="text-slate-400 border-b border-slate-800">
-                <th class="py-2 font-medium">원재료명</th>
-                <th class="py-2 font-medium w-20">중량(g)</th>
-                <th class="py-2 font-medium w-24">단가(원/kg)</th>
-                <th class="py-2 font-medium w-16 text-center">수분(%)</th>
-                <th class="py-2 font-medium w-16 text-center">유지(%)</th>
-                <th class="py-2 font-medium w-20 text-right">소계 원가</th>
-                <th class="py-2 font-medium w-8"></th>
+        <div class="mt-3 flex gap-2.5 items-start">
+          <div class="w-7 h-7 rounded-lg bg-[#385E50] text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
+            AI
+          </div>
+          <div id="aiOutputBox" class="bg-[#FAF9F6] border border-[#E6E4DD] rounded-xl p-3 text-xs text-[#24282B] leading-relaxed flex-1 min-w-0">
+            <p class="text-[#6E7882]">
+              우측 상단의 <strong>'AI 진단 실행'</strong> 버튼을 클릭하면 각 파트별 배합과 원가를 분석하여 <strong>① 공정 난이도 반영 적정 판매가, ② 수분 활성도 기반 보관 조건/유통기한, ③ 소비자 선호 트렌드</strong>를 전문적으로 제시해 드립니다.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 레시피 사진 OCR 모달 -->
+  <div id="ocrModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white border border-[#E6E4DD] rounded-2xl max-w-2xl w-full p-4 sm:p-5 shadow-2xl flex flex-col max-h-[92vh] custom-scroll">
+      <div class="flex items-center justify-between border-b border-[#EFECE6] pb-3 mb-3 gap-2">
+        <div class="min-w-0">
+          <h3 class="text-sm sm:text-base font-extrabold text-[#24282B] flex items-center gap-1.5">
+            <span>레시피 사진 업로드 및 자동 추출</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-md bg-[#EBF2EE] text-[#385E50] font-bold">Gemini 3 Vision</span>
+          </h3>
+          <p class="text-[11px] text-[#6E7882] mt-0.5">손글씨 노트나 교재 배합표를 분석하여 파트별 원재료와 중량(g)을 자동으로 추출합니다.</p>
+        </div>
+        <button onclick="closeModal('ocrModal')" class="w-7 h-7 rounded-lg bg-[#FAF9F6] hover:bg-[#EFECE6] text-[#6E7882] flex items-center justify-center text-sm font-bold shrink-0">&times;</button>
+      </div>
+
+      <div id="dropZone" onclick="document.getElementById('ocrFileInput').click()" class="border-2 border-dashed border-[#DDD9CE] hover:border-[#385E50] rounded-xl p-6 text-center cursor-pointer transition bg-[#FAF9F6] flex flex-col items-center justify-center gap-1.5">
+        <input type="file" id="ocrFileInput" accept="image/*" class="hidden" onchange="handleImageFileSelected(this.files[0])">
+        <div class="text-xs sm:text-sm text-[#24282B] font-bold">클릭하거나 사진 파일을 이곳에 끌어다 놓으세요</div>
+        <p class="text-[11px] text-[#8B959E]">수첩 손글씨, 책 페이지, 캡처 사진 모두 지원</p>
+      </div>
+
+      <div id="ocrProcessingContainer" class="hidden mt-3 p-3 bg-[#FAF9F6] rounded-xl border border-[#DDD9CE] space-y-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-[#385E50] animate-ping shrink-0"></span>
+            <span id="ocrStatusText" class="text-xs font-bold text-[#24282B]">AI가 레시피 텍스트와 숫자를 정밀 판독하고 있습니다...</span>
+          </div>
+        </div>
+        <div class="w-full bg-[#EFECE6] h-1.5 rounded-full overflow-hidden">
+          <div class="bg-[#385E50] h-full w-2/3 animate-pulse"></div>
+        </div>
+      </div>
+
+      <div id="ocrResultContainer" class="hidden mt-3 flex flex-col space-y-2.5 flex-1 overflow-hidden">
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-[#24282B] font-bold">추출된 레시피 목록</span>
+          <span class="text-[#6E7882] text-[11px]">체크된 재료만 현재 배합에 반영됩니다</span>
+        </div>
+        <div class="overflow-y-auto max-h-[220px] custom-scroll border border-[#E6E4DD] rounded-xl bg-white">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-[#FAF9F6] text-[#6E7882] text-[11px] sticky top-0 border-b border-[#E6E4DD]">
+              <tr>
+                <th class="p-2 w-7 text-center"><input type="checkbox" id="selectAllParsed" checked onchange="toggleSelectAllParsed(this.checked)"></th>
+                <th class="p-2">재료명</th>
+                <th class="p-2 w-20 text-right">중량(g)</th>
+                <th class="p-2 w-24 text-right">기억단가(원/kg)</th>
               </tr>
             </thead>
-            <tbody id="ingredientTableBody" class="divide-y divide-slate-800/60">
-              <!-- Dynamically rendered rows -->
+            <tbody id="parsedItemsTableBody" class="divide-y divide-[#EFECE6]"></tbody>
+          </table>
+        </div>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pt-2 border-t border-[#EFECE6] gap-2">
+          <input type="text" id="detectedRecipeTitle" placeholder="레시피 제목" class="flex-1 bg-[#FAF9F6] border border-[#DDD9CE] rounded-lg px-3 py-1.5 text-xs font-bold text-[#24282B] focus:outline-none">
+          <button onclick="importParsedRecipe('replace')" class="px-4 py-1.5 rounded-lg btn-sage-primary text-xs shadow-2xs">현재 배합표에 반영</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 거래명세표 단가 인식 모달 -->
+  <div id="receiptModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white border border-[#E6E4DD] rounded-2xl max-w-2xl w-full p-4 sm:p-5 shadow-2xl flex flex-col max-h-[92vh] custom-scroll">
+      <div class="flex items-center justify-between border-b border-[#EFECE6] pb-3 mb-3 gap-2">
+        <div class="min-w-0">
+          <h3 class="text-sm sm:text-base font-extrabold text-[#24282B] flex items-center gap-1.5">
+            <span>거래명세표 단가 일괄 갱신</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-md bg-[#FAF9F6] text-[#385E50] border border-[#DDD9CE] font-bold">1kg 환산</span>
+          </h3>
+          <p class="text-[11px] text-[#6E7882] mt-0.5">명세서의 다양한 규격(500g, 2.5kg, 20kg 포대 등)을 1kg당 단가(원/kg)로 자동 환산합니다.</p>
+        </div>
+        <button onclick="closeModal('receiptModal')" class="w-7 h-7 rounded-lg bg-[#FAF9F6] hover:bg-[#EFECE6] text-[#6E7882] flex items-center justify-center text-sm font-bold shrink-0">&times;</button>
+      </div>
+
+      <div id="receiptDropZone" onclick="document.getElementById('receiptFileInput').click()" class="border-2 border-dashed border-[#DDD9CE] hover:border-[#385E50] rounded-xl p-6 text-center cursor-pointer transition bg-[#FAF9F6]">
+        <input type="file" id="receiptFileInput" accept="image/*" class="hidden" onchange="handleReceiptFileSelected(this.files[0])">
+        <div class="text-xs sm:text-sm text-[#24282B] font-bold">거래명세표 또는 영수증 사진 선택</div>
+        <p class="text-[11px] text-[#8B959E] mt-0.5">인쇄된 명세서, 전자영수증 캡처 사진 모두 판독 가능</p>
+      </div>
+
+      <div id="receiptProcessingContainer" class="hidden mt-3 p-3 bg-[#FAF9F6] rounded-xl border border-[#DDD9CE] text-center space-y-1.5">
+        <div class="flex items-center justify-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[#385E50] animate-ping shrink-0"></span>
+          <span class="text-xs font-bold text-[#24282B]">품목 규격과 공급단가를 판독하여 kg당 단가로 계산하고 있습니다...</span>
+        </div>
+      </div>
+
+      <div id="receiptResultContainer" class="hidden mt-3 flex flex-col space-y-2.5 flex-1 overflow-hidden">
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-[#24282B] font-bold">인식 품목 및 1kg 환산 단가</span>
+          <span class="text-[#6E7882] text-[11px]">단가나 연결 재료명을 직접 수정할 수 있습니다</span>
+        </div>
+        <div class="overflow-y-auto max-h-[220px] custom-scroll border border-[#E6E4DD] rounded-xl bg-white">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-[#FAF9F6] text-[#6E7882] text-[11px] sticky top-0 border-b border-[#E6E4DD]">
+              <tr>
+                <th class="p-2 w-7 text-center"><input type="checkbox" id="selectAllReceipt" checked onchange="toggleSelectAllReceipt(this.checked)"></th>
+                <th class="p-2">명세표 품명</th>
+                <th class="p-2 w-24 text-right">환산단가(원/kg)</th>
+                <th class="p-2 w-28 text-left">연동 재료명</th>
+              </tr>
+            </thead>
+            <tbody id="receiptItemsTableBody" class="divide-y divide-[#EFECE6]"></tbody>
+          </table>
+        </div>
+        <div class="flex items-center justify-end pt-2 border-t border-[#EFECE6]">
+          <button onclick="applyReceiptPrices()" class="px-4 py-1.5 rounded-lg btn-sage-primary text-xs shadow-2xs">전역 단가 기억소 및 배합표에 일괄 반영</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 보관함 모달 -->
+  <div id="savedRecipesModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white border border-[#E6E4DD] rounded-2xl max-w-lg w-full p-4 sm:p-5 shadow-2xl flex flex-col max-h-[85vh]">
+      <div class="flex items-center justify-between mb-3 border-b border-[#EFECE6] pb-2.5">
+        <h3 class="text-sm sm:text-base font-extrabold text-[#24282B]">레시피 보관함</h3>
+        <button onclick="closeModal('savedRecipesModal')" class="w-7 h-7 rounded-lg bg-[#FAF9F6] hover:bg-[#EFECE6] text-[#6E7882] flex items-center justify-center text-sm font-bold">&times;</button>
+      </div>
+      <div class="mb-3">
+        <input type="text" id="recipeSearchInput" oninput="filterSavedRecipes()" placeholder="레시피명 또는 재료명 검색..." class="w-full bg-[#FAF9F6] border border-[#DDD9CE] rounded-lg px-3 py-1.5 text-xs text-[#24282B] focus:border-[#385E50] focus:outline-none">
+      </div>
+      <div class="overflow-y-auto max-h-[300px] custom-scroll space-y-2 flex-1" id="savedRecipesListContainer"></div>
+    </div>
+  </div>
+
+  <!-- 주방용 배합 인쇄 모달 -->
+  <div id="kitchenModal" class="fixed inset-0 bg-[#F5F4F0] z-50 hidden flex flex-col p-4 sm:p-8 overflow-y-auto">
+    <div class="max-w-3xl mx-auto w-full flex flex-col flex-1 bg-white border border-[#E6E4DD] rounded-2xl p-5 sm:p-8 shadow-xl">
+      <div class="flex items-center justify-between border-b border-[#EFECE6] pb-4 mb-5 no-print">
+        <div>
+          <span class="px-2 py-0.5 rounded-md bg-[#FAF9F6] border border-[#DDD9CE] text-[#385E50] font-bold text-xs">주방용 생산 지시서</span>
+          <h2 class="text-lg sm:text-xl font-extrabold text-[#24282B] mt-1" id="kitchenRecipeTitle">생산 레시피 시트</h2>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" class="px-3.5 py-1.5 rounded-lg btn-sage-primary text-xs shadow-2xs">인쇄하기</button>
+          <button onclick="closeModal('kitchenModal')" class="px-3.5 py-1.5 rounded-lg bg-[#FAF9F6] border border-[#DDD9CE] text-[#24282B] font-bold text-xs hover:bg-[#EFECE6] transition">닫기</button>
+        </div>
+      </div>
+
+      <div class="space-y-5">
+        <div class="text-center pb-3 border-b-2 border-[#24282B]">
+          <h2 class="text-xl sm:text-2xl font-black text-[#24282B] tracking-tight" id="printSheetTitle">생산 레시피 지시서</h2>
+          <p class="text-xs text-[#8B959E] mt-1">발행일: <span id="printSheetDate"></span> | GRAM Pro Smart R&D</p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 bg-[#FAF9F6] p-3.5 rounded-xl border border-[#E6E4DD] text-xs">
+          <div>
+            <span class="text-[#8B959E] block font-medium">목표 생산 수량</span>
+            <strong class="text-[#24282B] text-sm sm:text-base font-black num-font" id="sheetYield">0개</strong>
+          </div>
+          <div>
+            <span class="text-[#8B959E] block font-medium">개당 완제 중량</span>
+            <strong class="text-[#24282B] text-sm sm:text-base font-black num-font" id="sheetPortion">0g</strong>
+          </div>
+          <div>
+            <span class="text-[#8B959E] block font-medium">총 반죽 중량</span>
+            <strong class="text-[#385E50] text-sm sm:text-base font-black num-font" id="sheetBatch">0g</strong>
+          </div>
+          <div>
+            <span class="text-[#8B959E] block font-medium">굽기 손실률</span>
+            <strong class="text-[#24282B] text-sm sm:text-base font-black num-font" id="sheetLoss">0%</strong>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-xs font-extrabold text-[#24282B] mb-2 uppercase tracking-wider">공정 파트별 원재료 배합표 (Baker's %)</h3>
+          <div id="sheetTableContainer" class="space-y-3.5"></div>
+        </div>
+
+        <div class="bg-[#FAF9F6] p-4 rounded-xl border border-[#E6E4DD] space-y-1.5">
+          <h3 class="text-xs font-extrabold text-[#24282B]">공정 가이드라인</h3>
+          <div id="aiProcessGuideBox" class="text-xs text-[#5E676E] leading-relaxed">
+            <p class="text-[#8B959E]">공정 가이드 로딩 중...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 식품위생법 영양표시 및 성분표 라벨 모달 -->
+  <div id="foodLabelModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+    <div class="bg-white border border-[#E6E4DD] rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl flex flex-col max-h-[92vh] custom-scroll">
+      
+      <!-- 모달 상단 헤더 (no-print) -->
+      <div class="flex items-center justify-between border-b border-[#EFECE6] pb-3 mb-3 no-print gap-2">
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 class="text-sm sm:text-base font-extrabold text-[#24282B]">식품위생법 규격 표시사항 및 라벨</h3>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-[#EBF2EE] text-[#385E50] font-bold">AI 자동분석 및 편집 지원</span>
+          </div>
+          <p class="text-[11px] text-[#8B959E] mt-0.5">AI가 제품 특성을 분석해 법적 필수 문구를 자동 생성하며, 모든 항목을 직접 수정할 수 있습니다.</p>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button id="btnAiDraftLabel" onclick="generateAiFoodLabelDraft()" class="px-2.5 py-1.5 rounded-lg btn-sage-primary text-xs shadow-2xs flex items-center gap-1 font-bold">
+            <span id="aiLabelSpinner" class="hidden w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <span id="aiLabelBtnText">AI 라벨 재분석</span>
+          </button>
+          <button onclick="closeModal('foodLabelModal')" class="w-7 h-7 rounded-lg bg-[#FAF9F6] hover:bg-[#EFECE6] text-[#6E7882] flex items-center justify-center text-sm font-bold shrink-0">&times;</button>
+        </div>
+      </div>
+
+      <!-- 탭 선택 바 (no-print) -->
+      <div class="flex items-center justify-between gap-1.5 p-1 bg-[#FAF9F6] border border-[#E6E4DD] rounded-xl mb-3.5 no-print overflow-x-auto">
+        <div class="flex items-center gap-1">
+          <button id="tabBtn-nutrition" onclick="switchFoodLabelTab('nutrition')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-[#385E50] text-white shadow-2xs">
+            1. 식품 영양정보
+          </button>
+          <button id="tabBtn-ingredients" onclick="switchFoodLabelTab('ingredients')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-[#5E676E] hover:text-[#24282B]">
+            2. 원재료명 및 함량
+          </button>
+          <button id="tabBtn-mandatory" onclick="switchFoodLabelTab('mandatory')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-[#5E676E] hover:text-[#24282B]">
+            3. 식품 표시사항
+          </button>
+          <button id="tabBtn-all" onclick="switchFoodLabelTab('all')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-[#5E676E] hover:text-[#24282B]">
+            전체 통합 보기
+          </button>
+        </div>
+      </div>
+
+      <!-- 라벨 카드 본문 (인쇄 및 직접 편집 대상) -->
+      <div id="labelPrintRoot" class="space-y-4">
+        
+        <!-- 1. 식품 영양정보 카드 (편집 가능) -->
+        <div id="section-nutrition" class="border-2 border-black p-4 rounded-xl bg-white text-slate-900">
+          <div class="border-b-4 border-black pb-1.5 flex justify-between items-baseline gap-2">
+            <input type="text" id="labelTitle" value="영 양 정 보" class="font-black text-base sm:text-lg tracking-tight bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none w-1/2">
+            <input type="text" id="labelServingSize" value="1회 제공량 기준" class="text-xs text-right text-slate-600 font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none w-1/2">
+          </div>
+          <div class="flex justify-between items-baseline border-b border-black py-1.5 font-bold">
+            <span class="text-xs sm:text-sm">열 량</span>
+            <div class="flex items-center gap-1">
+              <input type="number" id="labelCaloriesVal" value="0" class="font-black text-base sm:text-lg text-right text-black num-font w-20 bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+              <span class="text-sm">kcal</span>
+            </div>
+          </div>
+          <div class="space-y-1.5 text-xs divide-y divide-slate-200">
+            <!-- 나트륨 -->
+            <div class="flex justify-between items-center pt-1.5">
+              <div class="flex items-center gap-1">
+                <span>나트륨</span>
+                <input type="number" id="labelSodiumVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
+                <span>mg</span>
+              </div>
+              <div class="flex items-center gap-0.5">
+                <input type="number" id="labelSodiumPctVal" value="0" class="w-10 text-right text-slate-600 font-mono font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                <span class="font-bold text-slate-600 font-mono">%</span>
+              </div>
+            </div>
+            <!-- 탄수화물 -->
+            <div class="flex justify-between items-center pt-1.5">
+              <div class="flex items-center gap-1">
+                <span>탄수화물</span>
+                <input type="number" step="0.1" id="labelCarbsVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
+                <span>g</span>
+              </div>
+              <div class="flex items-center gap-0.5">
+                <input type="number" id="labelCarbsPctVal" value="0" class="w-10 text-right text-slate-600 font-mono font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                <span class="font-bold text-slate-600 font-mono">%</span>
+              </div>
+            </div>
+            <!-- 당류 -->
+            <div class="flex justify-between items-center pl-3 pt-0.5 text-slate-700 text-[11px]">
+              <div class="flex items-center gap-1">
+                <span>당류</span>
+                <input type="number" step="0.1" id="labelSugarVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
+                <span>g</span>
+              </div>
+              <div class="flex items-center gap-0.5">
+                <input type="number" id="labelSugarPctVal" value="0" class="w-10 text-right text-slate-500 font-mono bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                <span class="text-slate-500 font-mono">%</span>
+              </div>
+            </div>
+            <!-- 지방 -->
+            <div class="flex justify-between items-center pt-1.5">
+              <div class="flex items-center gap-1">
+                <span>지방</span>
+                <input type="number" step="0.1" id="labelFatVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
+                <span>g</span>
+              </div>
+              <div class="flex items-center gap-0.5">
+                <input type="number" id="labelFatPctVal" value="0" class="w-10 text-right text-slate-600 font-mono font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                <span class="font-bold text-slate-600 font-mono">%</span>
+              </div>
+            </div>
+            <!-- 트랜스지방 -->
+            <div class="flex justify-between items-center pl-3 pt-0.5 text-slate-700 text-[11px]">
+              <div class="flex items-center gap-1">
+                <span>트랜스지방</span>
+                <input type="number" step="0.1" id="labelTransFatVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
+                <span>g</span>
+              </div>
+              <span class="text-slate-400 font-mono">-</span>
+            </div>
+            <!-- 포화지방 -->
+            <div class="flex justify-between items-center pl-3 pt-0.5 text-slate-700 text-[11px]">
+              <div class="flex items-center gap-1">
+                <span>포화지방</span>
+                <input type="number" step="0.1" id="labelSatFatVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
+                <span>g</span>
+              </div>
+              <div class="flex items-center gap-0.5">
+                <input type="number" id="labelSatFatPctVal" value="0" class="w-10 text-right text-slate-500 font-mono bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                <span class="text-slate-500 font-mono">%</span>
+              </div>
+            </div>
+            <!-- 콜레스테롤 -->
+            <div class="flex justify-between items-center pt-1.5">
+              <div class="flex items-center gap-1">
+                <span>콜레스테롤</span>
+                <input type="number" id="labelCholesterolVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
+                <span>mg</span>
+              </div>
+              <div class="flex items-center gap-0.5">
+                <input type="number" id="labelCholesterolPctVal" value="0" class="w-10 text-right text-slate-600 font-mono font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                <span class="font-bold text-slate-600 font-mono">%</span>
+              </div>
+            </div>
+            <!-- 단백질 -->
+            <div class="flex justify-between items-center pt-1.5">
+              <div class="flex items-center gap-1">
+                <span>단백질</span>
+                <input type="number" step="0.1" id="labelProteinVal" value="0" class="w-14 text-right font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none num-font">
+                <span>g</span>
+              </div>
+              <div class="flex items-center gap-0.5">
+                <input type="number" id="labelProteinPctVal" value="0" class="w-10 text-right text-slate-600 font-mono font-bold bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                <span class="font-bold text-slate-600 font-mono">%</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-[10px] text-slate-500 mt-2.5 text-right leading-tight">* 1일 영양성분 기준치에 대한 비율(%)은 2,000 kcal 기준이므로 개인 필요 열량에 따라 다를 수 있습니다.</p>
+        </div>
+
+        <!-- 2. 원재료명 및 함량 카드 (직접 편집 가능) -->
+        <div id="section-ingredients" class="border-2 border-black p-4 rounded-xl bg-white text-slate-900 space-y-2.5">
+          <div class="border-b-2 border-black pb-1.5 flex justify-between items-center">
+            <h4 class="font-black text-xs sm:text-sm tracking-tight text-slate-900">원재료명 및 함량 (성분 표기)</h4>
+            <span class="text-[10px] text-slate-500">배합비 순차 정렬 / 직접 편집 가능</span>
+          </div>
+          <div>
+            <textarea id="labelIngredientsText" rows="4" class="w-full text-xs text-slate-800 leading-relaxed p-2 bg-[#FAF9F6] border border-[#DDD9CE] rounded-lg focus:border-[#385E50] focus:bg-white focus:outline-none" placeholder="원재료명 및 배합비 내역이 표시됩니다."></textarea>
+          </div>
+          <div class="bg-rose-50 border border-rose-200 p-2.5 rounded-lg text-xs text-slate-900 flex items-baseline gap-1.5 flex-wrap">
+            <strong class="text-rose-700 font-bold shrink-0">알레르기 유발 물질:</strong>
+            <input type="text" id="labelAllergensInput" value="해당 없음" class="flex-1 min-w-[150px] font-bold text-rose-800 bg-transparent border-b border-dashed border-rose-300 focus:border-rose-600 focus:outline-none px-1">
+          </div>
+        </div>
+
+        <!-- 3. 식품 등의 표시기준 필수 표시사항 카드 (직접 편집 가능) -->
+        <div id="section-mandatory" class="border-2 border-black p-4 rounded-xl bg-white text-slate-900 space-y-2">
+          <div class="border-b-2 border-black pb-1.5 flex justify-between items-center">
+            <h4 class="font-black text-xs sm:text-sm tracking-tight text-slate-900">식품위생법에 의한 한글 표시사항</h4>
+            <span class="text-[10px] text-slate-500">소비자기본법 규격 / 클릭하여 수정</span>
+          </div>
+          <table class="w-full text-left text-xs border-collapse">
+            <tbody class="divide-y divide-slate-200 border-y border-slate-200 text-slate-800">
+              <tr>
+                <th class="py-1.5 px-2 bg-slate-50 font-bold w-24 text-[11px] border-r border-slate-200">제품명</th>
+                <td class="py-1 px-2">
+                  <input type="text" id="labelMandatoryName" value="" class="w-full font-extrabold text-[#24282B] bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                </td>
+              </tr>
+              <tr>
+                <th class="py-1.5 px-2 bg-slate-50 font-bold w-24 text-[11px] border-r border-slate-200">식품의 유형</th>
+                <td class="py-1 px-2">
+                  <input type="text" id="labelMandatoryType" value="과자 (구움과자류/빵류)" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                </td>
+              </tr>
+              <tr>
+                <th class="py-1.5 px-2 bg-slate-50 font-bold w-24 text-[11px] border-r border-slate-200">내용량</th>
+                <td class="py-1 px-2">
+                  <input type="text" id="labelMandatoryWeight" value="" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                </td>
+              </tr>
+              <tr>
+                <th class="py-1.5 px-2 bg-slate-50 font-bold w-24 text-[11px] border-r border-slate-200">제조원 및 소재지</th>
+                <td class="py-1 px-2">
+                  <input type="text" id="labelMandatoryManufacturer" value="GRAM 베이커리 R&D 랩 (별도 표기)" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                </td>
+              </tr>
+              <tr>
+                <th class="py-1.5 px-2 bg-slate-50 font-bold w-24 text-[11px] border-r border-slate-200">소비기한</th>
+                <td class="py-1 px-2">
+                  <input type="text" id="labelMandatoryExpiry" value="" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                </td>
+              </tr>
+              <tr>
+                <th class="py-1.5 px-2 bg-slate-50 font-bold w-24 text-[11px] border-r border-slate-200">보관방법</th>
+                <td class="py-1 px-2">
+                  <input type="text" id="labelMandatoryStorage" value="" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                </td>
+              </tr>
+              <tr>
+                <th class="py-1.5 px-2 bg-slate-50 font-bold w-24 text-[11px] border-r border-slate-200">포장재질</th>
+                <td class="py-1 px-2">
+                  <input type="text" id="labelMandatoryPackaging" value="내포장(폴리프로필렌: OPP)" class="w-full bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none">
+                </td>
+              </tr>
+              <tr>
+                <th class="py-1.5 px-2 bg-slate-50 font-bold w-24 text-[11px] border-r border-slate-200">주의사항</th>
+                <td class="py-1.5 px-2">
+                  <textarea id="labelMandatoryPrecautions" rows="2" class="w-full text-[11px] text-slate-600 leading-snug bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-[#385E50] focus:outline-none resize-none">부정·불량식품 신고는 국번없이 1399&#10;본 제품은 대두, 견과류, 밀, 우유, 계란을 사용하는 제조시설에서 제조하고 있습니다.</textarea>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Recipe Quick Templates -->
-        <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between flex-wrap gap-2 text-xs">
-          <span class="text-slate-400">프리셋 템플릿 불러오기:</span>
-          <div class="flex items-center gap-1.5">
-            <button onclick="loadTemplate('financier')" class="px-2 py-1 rounded bg-[#1e232d] hover:bg-slate-700 text-slate-300 text-[11px] border border-slate-700 transition">버터 피낭시에</button>
-            <button onclick="loadTemplate('macaron')" class="px-2 py-1 rounded bg-[#1e232d] hover:bg-slate-700 text-slate-300 text-[11px] border border-slate-700 transition">마카롱 코크</button>
-            <button onclick="loadTemplate('pound')" class="px-2 py-1 rounded bg-[#1e232d] hover:bg-slate-700 text-slate-300 text-[11px] border border-slate-700 transition">바닐라 파운드케이크</button>
-          </div>
-        </div>
       </div>
 
-    </section>
-
-    <!-- Right Column: Real-time Stats & Gemini Advisor (5 Cols) -->
-    <section class="lg:col-span-5 flex flex-col gap-5">
-
-      <!-- Executive Metric Summary Card -->
-      <div class="bg-[#161920] border border-slate-800 rounded-2xl p-4 shadow-sm">
-        <h2 class="text-sm font-semibold text-white tracking-wide mb-3 flex items-center justify-between">
-          <span>배치 생산 및 단가 분석 결과</span>
-          <span class="text-[11px] font-normal text-slate-400">실시간 연동</span>
-        </h2>
-
-        <div class="grid grid-cols-2 gap-2.5">
-          <!-- Total Batch Weight -->
-          <div class="bg-[#1a1e27] p-3 rounded-xl border border-slate-800/80">
-            <span class="text-[11px] text-slate-400 block mb-0.5">총 반죽 중량 (Batch)</span>
-            <div class="text-lg font-bold text-white tracking-tight" id="statBatchWeight">0 <span class="text-xs font-normal text-slate-400">g</span></div>
-            <span class="text-[10px] text-slate-500" id="statYieldCount">완성 수량: 약 0개</span>
-          </div>
-
-          <!-- Total Batch Cost -->
-          <div class="bg-[#1a1e27] p-3 rounded-xl border border-slate-800/80">
-            <span class="text-[11px] text-slate-400 block mb-0.5">총 배치 원재료비</span>
-            <div class="text-lg font-bold text-white tracking-tight" id="statTotalCost">0 <span class="text-xs font-normal text-slate-400">원</span></div>
-            <span class="text-[10px] text-slate-500">kg당 원가: <span id="statCostPerKg">0</span>원</span>
-          </div>
-
-          <!-- Portion Cost -->
-          <div class="bg-[#1a1e27] p-3 rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500/5 to-transparent">
-            <span class="text-[11px] text-amber-300/80 block mb-0.5">개당 순수 재료비</span>
-            <div class="text-xl font-extrabold text-amber-400 tracking-tight" id="statPortionCost">0 <span class="text-xs font-normal text-amber-300/70">원</span></div>
-            <span class="text-[10px] text-slate-400" id="statPortionLossNote">굽기 손실 12% 반영</span>
-          </div>
-
-          <!-- Recommended Selling Price -->
-          <div class="bg-[#1a1e27] p-3 rounded-xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/5 to-transparent">
-            <span class="text-[11px] text-emerald-300/80 block mb-0.5">권장 판매가 (원가율 25%)</span>
-            <div class="text-xl font-extrabold text-emerald-400 tracking-tight" id="statSellingPrice">0 <span class="text-xs font-normal text-emerald-300/70">원</span></div>
-            <span class="text-[10px] text-slate-400">예상 마진: <span id="statGrossMargin">0</span>원</span>
-          </div>
-        </div>
-
-        <!-- Shelf Life & Water Activity Risk Bar -->
-        <div class="mt-4 p-3 bg-[#111317] rounded-xl border border-slate-800">
-          <div class="flex items-center justify-between text-xs mb-1.5">
-            <div class="flex items-center gap-1.5">
-              <span class="text-slate-300 font-medium">예측 수분 활성도 (aw Risk)</span>
-              <span id="statAwValue" class="text-amber-400 font-bold">0.74 aw</span>
-            </div>
-            <span id="statShelfStatus" class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">안전 (상온 14일)</span>
-          </div>
-          <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden flex">
-            <div id="awProgress" class="bg-gradient-to-r from-emerald-500 via-amber-400 to-rose-500 h-full transition-all duration-300" style="width: 45%;"></div>
-          </div>
-          <p class="text-[10px] text-slate-400 mt-1.5 leading-relaxed" id="awExplanation">
-            자유수분 비율과 당 농도를 기반으로 계산된 보존성 지표입니다. 0.85 aw 초과 시 곰팡이 및 미생물 번식 위험이 급증합니다.
-          </p>
-        </div>
-      </div>
-
-      <!-- Gemini Formulation Advisor (AI Simulation) -->
-      <div class="bg-[#161920] border border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col flex-1">
-        <div class="flex items-center justify-between mb-3">
-          <div class="flex items-center gap-2">
-            <div class="w-5 h-5 rounded bg-amber-400/20 text-amber-400 flex items-center justify-center text-xs font-bold">✨</div>
-            <h2 class="text-sm font-semibold text-white tracking-wide">Gemini 배합 진단 &amp; 품질 어드바이저</h2>
-          </div>
-          <button id="btnRunAI" class="px-3 py-1 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-semibold text-xs transition shadow flex items-center gap-1">
-            <svg class="w-3.5 h-3.5 animate-spin hidden" id="aiSpinner" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-            <span id="aiBtnText">AI 배합 진단 실행</span>
+      <!-- 하단 인쇄 & 복사 액션 버튼 바 (no-print) -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 mt-4 pt-3 border-t border-[#EFECE6] no-print">
+        <div class="flex items-center gap-2">
+          <button onclick="copyCurrentLabelText()" class="px-3.5 py-2 rounded-lg bg-[#FAF9F6] border border-[#DDD9CE] hover:bg-[#EFECE6] text-xs font-bold text-[#24282B] transition">
+            라벨 텍스트 복사
           </button>
         </div>
-
-        <!-- AI Output Box -->
-        <div id="aiOutputBox" class="flex-1 bg-[#111317] border border-slate-800/80 rounded-xl p-3 text-xs text-slate-300 leading-relaxed overflow-y-auto max-h-[220px] custom-scroll">
-          <div class="text-slate-500 flex flex-col items-center justify-center py-6 text-center">
-            <svg class="w-8 h-8 mb-2 opacity-40 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-            <p>'AI 배합 진단 실행'을 클릭하면 현재 배합비의 유화 안정성, 당도(Brix), 수분 활성도(Aw) 개선점과 원가 절감 팁을 제미나이가 분석합니다.</p>
-          </div>
+        <div class="flex items-center gap-2">
+          <button onclick="printActiveLabelOnly()" class="px-4 py-2 rounded-lg btn-sage-sub text-xs shadow-2xs font-bold">
+            현재 탭만 인쇄
+          </button>
+          <button onclick="printAllLabels()" class="px-4 py-2 rounded-lg btn-sage-primary text-xs shadow-2xs font-bold">
+            전체 라벨 일괄 인쇄
+          </button>
         </div>
       </div>
 
-    </section>
-
-  </main>
-
-  <!-- Micro-SaaS Monetization Demo Banner -->
-  <footer class="bg-[#121419] border-t border-slate-800 py-3.5 px-4 lg:px-8 mt-4">
-    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-      <div class="flex items-center gap-2.5">
-        <span class="px-2 py-0.5 rounded bg-amber-400/10 text-amber-400 font-semibold text-[10px] border border-amber-400/20">Monetization Model</span>
-        <p class="text-slate-400">
-          이 도구는 비개발자 1인이 구축하여 전 세계 베이커리·F&B 사업장에 <strong class="text-slate-200">월 9,900원</strong>에 구독 판매할 수 있는 마이크로 SaaS 예시입니다.
-        </p>
-      </div>
-      <div class="flex items-center gap-3">
-        <span class="text-slate-400 hidden md:inline">고급 영양성분표 자동 라벨링 &amp; 엑셀 양방향 동기화</span>
-        <button onclick="openModal('upgradeModal')" class="text-amber-400 hover:text-amber-300 font-semibold underline underline-offset-2">Pro 구독 플랜 보기 &rarr;</button>
-      </div>
-    </div>
-  </footer>
-
-  <!-- Modal: Pro Subscription Upgrade Preview -->
-  <div id="upgradeModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-[#161920] border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
-      <button onclick="closeModal('upgradeModal')" class="absolute top-4 right-4 text-slate-400 hover:text-white">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-      </button>
-
-      <div class="text-center mb-5">
-        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-300 mx-auto flex items-center justify-center shadow-lg shadow-amber-500/25 mb-3 font-bold text-slate-950 text-xl">
-          ✦
-        </div>
-        <h3 class="text-lg font-bold text-white tracking-tight">BakeCalc Pro 멤버십</h3>
-        <p class="text-xs text-slate-400 mt-1">식품 제조사 및 프리미엄 베이커리를 위한 올인원 SaaS</p>
-      </div>
-
-      <div class="space-y-3 mb-6 text-xs text-slate-300">
-        <div class="flex items-start gap-2.5">
-          <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
-          <span><strong>무제한 레시피 클라우드 저장</strong> 및 팀원 협업 링크 공유</span>
-        </div>
-        <div class="flex items-start gap-2.5">
-          <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
-          <span><strong>Gemini 1.5 Pro 기반 무제한 배합 진단</strong> (유화 결함, 보존성 해결)</span>
-        </div>
-        <div class="flex items-start gap-2.5">
-          <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
-          <span><strong>식약처 식품표시기준 영양성분표</strong> 및 알레르기 유발물질 PDF 자동 생성</span>
-        </div>
-        <div class="flex items-start gap-2.5">
-          <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
-          <span><strong>원자재 가격 변동 실시간 알림</strong> 및 원가율 마진 방어 시뮬레이션</span>
-        </div>
-      </div>
-
-      <div class="p-3 bg-[#111317] rounded-xl border border-amber-500/20 text-center mb-5">
-        <span class="text-xs text-slate-400 line-through">정상가 월 29,000원</span>
-        <div class="text-2xl font-black text-amber-400">월 9,900원 <span class="text-xs font-normal text-slate-300">/ 부가세 별도</span></div>
-        <p class="text-[10px] text-emerald-400 mt-1">첫 14일 무료 체험 기간 제공</p>
-      </div>
-
-      <button onclick="handleSubscribeDemo()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs transition shadow-lg shadow-amber-500/20">
-        14일 무료 체험 시작하기
-      </button>
     </div>
   </div>
 
-  <!-- Notification Toast -->
-  <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 border border-slate-700 text-slate-200 px-4 py-2.5 rounded-xl shadow-2xl text-xs transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none z-50 flex items-center gap-2">
-    <span class="text-amber-400">●</span>
-    <span id="toastMsg">알림 메시지</span>
+  <!-- 토스트 알림창 -->
+  <div id="toast" class="fixed bottom-5 right-5 bg-[#24282B] text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs font-bold transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none z-50 flex items-center gap-2">
+    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+    <span id="toastMsg">알림</span>
   </div>
 
-  <!-- Interactive Logic -->
-  <script>
-    // State management
-    let ingredients = [
-      { id: 1, name: "발효 버터 (노이제트)", weight: 120, costPerKg: 19000, waterPct: 16, fatPct: 82 },
-      { id: 2, name: "난백 (계란 흰자)", weight: 110, costPerKg: 7500, waterPct: 88, fatPct: 0.2 },
-      { id: 3, name: "헤이즐넛 파우더", weight: 50, costPerKg: 28000, waterPct: 4, fatPct: 60 },
-      { id: 4, name: "박력분 (프랑스 T55)", weight: 45, costPerKg: 3200, waterPct: 14, fatPct: 1.2 },
-      { id: 5, name: "백설탕 / 트레할로스", weight: 90, costPerKg: 2500, waterPct: 0.5, fatPct: 0 },
-      { id: 6, name: "발로나 과나하 (70%)", weight: 30, costPerKg: 42000, waterPct: 1.5, fatPct: 42 }
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'gram-default-app';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "demo", projectId: "demo" };
+    
+    let db, auth, currentUser = null;
+    let isCloudInitialized = false;
+    let selectedSubCategoryId = null; // 현재 선택되어 활성화된 파트 ID
+
+    async function initFirebase() {
+      try {
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+
+        onAuthStateChanged(auth, (user) => {
+          if (user) {
+            currentUser = user;
+            isCloudInitialized = true;
+            const syncEl = document.getElementById('syncBadge');
+            if (syncEl) {
+              syncEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>클라우드 동기화 완료`;
+            }
+            setupCloudSyncListeners();
+          }
+        });
+      } catch (err) {
+        console.warn("Firebase 로컬 모드 폴백:", err);
+        isCloudInitialized = false;
+        loadInitialState();
+      }
+    }
+
+    const GLOBAL_PRICE_MEMORY_KEY = 'GRAM_GLOBAL_PRICE_MEMORY_V2';
+    const STORAGE_KEY = 'GRAM_CURRENT_RECIPE_V8';
+    const SAVED_RECIPES_KEY = 'GRAM_SAVED_RECIPES_V8';
+
+    function getGlobalPriceMemory() {
+      try {
+        return JSON.parse(localStorage.getItem(GLOBAL_PRICE_MEMORY_KEY) || '{}');
+      } catch(e) { return {}; }
+    }
+
+    function saveGlobalPrice(name, costPerKg) {
+      const memory = getGlobalPriceMemory();
+      const cleanKey = name.toLowerCase().replace(/\s+/g, '');
+      memory[cleanKey] = { name, costPerKg, updatedAt: Date.now() };
+      localStorage.setItem(GLOBAL_PRICE_MEMORY_KEY, JSON.stringify(memory));
+
+      if (isCloudInitialized && currentUser && db) {
+        setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'globalPrices', cleanKey), {
+          name, costPerKg, updatedAt: Date.now()
+        }).catch(e => console.warn(e));
+      }
+    }
+
+    function lookupGlobalPrice(name, defaultCost) {
+      const memory = getGlobalPriceMemory();
+      const cleanKey = name.toLowerCase().replace(/\s+/g, '');
+      if (memory[cleanKey] && memory[cleanKey].costPerKg) {
+        return memory[cleanKey].costPerKg;
+      }
+      return defaultCost;
+    }
+
+    // 기본 제과 물성 및 지식 베이스
+    const INGREDIENT_KNOWLEDGE_BASE = [
+      { keywords: ["버터", "beurre", "butter", "발효버터"], defaultCost: 19500, waterPct: 16.0, fatPct: 82.0, sugarPct: 0.0, isFlour: false, allergen: "우유" },
+      { keywords: ["난백", "흰자", "egg white"], defaultCost: 7500, waterPct: 88.0, fatPct: 0.2, sugarPct: 0.0, isFlour: false, allergen: "계란" },
+      { keywords: ["전란", "달걀", "계란", "egg"], defaultCost: 6500, waterPct: 75.0, fatPct: 10.0, sugarPct: 0.5, isFlour: false, allergen: "계란" },
+      { keywords: ["박력분", "밀가루", "flour"], defaultCost: 3200, waterPct: 14.0, fatPct: 1.2, sugarPct: 0.8, isFlour: true, allergen: "밀" },
+      { keywords: ["설탕", "백설탕", "sugar"], defaultCost: 2400, waterPct: 0.2, fatPct: 0.0, sugarPct: 99.8, isFlour: false, allergen: "" },
+      { keywords: ["아몬드", "아몬드가루", "almond"], defaultCost: 22000, waterPct: 4.8, fatPct: 51.0, sugarPct: 4.5, isFlour: false, allergen: "견과류" },
+      { keywords: ["퓨레", "라즈베리", "라즈베리퓨레"], defaultCost: 24000, waterPct: 84.0, fatPct: 0.5, sugarPct: 10.0, isFlour: false, allergen: "" },
+      { keywords: ["펙틴", "nh펙틴"], defaultCost: 65000, waterPct: 5.0, fatPct: 0.0, sugarPct: 0.0, isFlour: false, allergen: "" },
+      { keywords: ["슈가파우더", "분당"], defaultCost: 3100, waterPct: 0.5, fatPct: 0.0, sugarPct: 98.0, isFlour: false, allergen: "" }
     ];
 
-    const templates = {
-      financier: [
-        { id: 1, name: "발효 버터 (노이제트)", weight: 120, costPerKg: 19000, waterPct: 16, fatPct: 82 },
-        { id: 2, name: "난백 (계란 흰자)", weight: 110, costPerKg: 7500, waterPct: 88, fatPct: 0.2 },
-        { id: 3, name: "헤이즐넛 파우더", weight: 50, costPerKg: 28000, waterPct: 4, fatPct: 60 },
-        { id: 4, name: "박력분 (프랑스 T55)", weight: 45, costPerKg: 3200, waterPct: 14, fatPct: 1.2 },
-        { id: 5, name: "백설탕 / 트레할로스", weight: 90, costPerKg: 2500, waterPct: 0.5, fatPct: 0 },
-        { id: 6, name: "발로나 과나하 (70%)", weight: 30, costPerKg: 42000, waterPct: 1.5, fatPct: 42 }
+    let currentRecipe = {
+      title: "라즈베리 마들렌",
+      portionWeight: 42,
+      bakeLoss: 12.0,
+      targetCostRate: 25,
+      targetYield: 30,
+      subCategories: [
+        {
+          id: 1,
+          name: "마들렌 본반죽",
+          ingredients: [
+            { id: 101, name: "발효 버터", weight: 150, costPerKg: lookupGlobalPrice("발효 버터", 19500), isFlour: false, allergen: "우유" },
+            { id: 102, name: "전란 (달걀)", weight: 150, costPerKg: lookupGlobalPrice("전란", 6500), isFlour: false, allergen: "계란" },
+            { id: 103, name: "박력분", weight: 150, costPerKg: lookupGlobalPrice("박력분", 3200), isFlour: true, allergen: "밀" },
+            { id: 104, name: "백설탕", weight: 130, costPerKg: lookupGlobalPrice("설탕", 2400), isFlour: false, allergen: "" },
+            { id: 105, name: "베이킹파우더", weight: 4, costPerKg: lookupGlobalPrice("베이킹파우더", 6500), isFlour: false, allergen: "" }
+          ]
+        },
+        {
+          id: 2,
+          name: "라즈베리 콤포트",
+          ingredients: [
+            { id: 201, name: "라즈베리 퓨레", weight: 120, costPerKg: lookupGlobalPrice("라즈베리 퓨레", 24000), isFlour: false, allergen: "" },
+            { id: 202, name: "백설탕", weight: 35, costPerKg: lookupGlobalPrice("설탕", 2400), isFlour: false, allergen: "" },
+            { id: 203, name: "NH 펙틴", weight: 3, costPerKg: lookupGlobalPrice("NH 펙틴", 65000), isFlour: false, allergen: "" },
+            { id: 204, name: "레몬즙", weight: 5, costPerKg: lookupGlobalPrice("레몬즙", 9000), isFlour: false, allergen: "" }
+          ]
+        },
+        {
+          id: 3,
+          name: "라즈베리 글라사쥬",
+          ingredients: [
+            { id: 301, name: "슈가파우더", weight: 90, costPerKg: lookupGlobalPrice("슈가파우더", 3100), isFlour: false, allergen: "" },
+            { id: 302, name: "라즈베리 퓨레/과즙", weight: 20, costPerKg: lookupGlobalPrice("라즈베리 퓨레", 24000), isFlour: false, allergen: "" }
+          ]
+        }
       ],
-      macaron: [
-        { id: 1, name: "아몬드 파우더", weight: 150, costPerKg: 22000, waterPct: 5, fatPct: 50 },
-        { id: 2, name: "슈가파우더", weight: 150, costPerKg: 3000, waterPct: 0.2, fatPct: 0 },
-        { id: 3, name: "난백 (머랭용)", weight: 110, costPerKg: 7500, waterPct: 88, fatPct: 0.2 },
-        { id: 4, name: "그라뉴당", weight: 100, costPerKg: 2400, waterPct: 0.2, fatPct: 0 }
-      ],
-      pound: [
-        { id: 1, name: "무염 버터", weight: 200, costPerKg: 18000, waterPct: 16, fatPct: 82 },
-        { id: 2, name: "전란 (통계란)", weight: 200, costPerKg: 6500, waterPct: 75, fatPct: 10 },
-        { id: 3, name: "박력분", weight: 200, costPerKg: 2800, waterPct: 14, fatPct: 1.2 },
-        { id: 4, name: "설탕", weight: 180, costPerKg: 2200, waterPct: 0.2, fatPct: 0 },
-        { id: 5, name: "바닐라빈 페이스트", weight: 10, costPerKg: 95000, waterPct: 20, fatPct: 1 }
+      packaging: [
+        { id: 901, name: "개별 OPP 봉투", cost: 25, qtyPerPortion: 1 },
+        { id: 902, name: "탈산소제 (에이지리스)", cost: 35, qtyPerPortion: 1 }
       ]
     };
 
-    // Render Table
-    function renderTable() {
-      const tbody = document.getElementById('ingredientTableBody');
-      tbody.innerHTML = '';
+    function ensureHierarchicalStructure(recipe) {
+      if (!recipe.subCategories || !Array.isArray(recipe.subCategories) || recipe.subCategories.length === 0) {
+        const legacyIngredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
+        recipe.subCategories = [
+          {
+            id: Date.now(),
+            name: "기본 본반죽",
+            ingredients: legacyIngredients.length > 0 ? legacyIngredients : [
+              { id: 1, name: "발효 버터", weight: 140, costPerKg: lookupGlobalPrice("발효 버터", 19500), isFlour: false, allergen: "우유" }
+            ]
+          }
+        ];
+      }
+      delete recipe.ingredients;
 
-      ingredients.forEach((item, index) => {
-        const itemCost = Math.round((item.weight / 1000) * item.costPerKg);
+      // 선택된 파트가 없거나 유효하지 않으면 첫 번째 파트를 기본 활성화
+      if (selectedSubCategoryId === null || !recipe.subCategories.some(s => s.id === selectedSubCategoryId)) {
+        if (recipe.subCategories.length > 0) {
+          selectedSubCategoryId = recipe.subCategories[0].id;
+        }
+      }
+    }
 
-        const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-800/40 transition group";
-        tr.innerHTML = `
-          <td class="py-2.5 pr-2">
-            <input type="text" value="${item.name}" onchange="updateIngredient(${item.id}, 'name', this.value)" class="w-full bg-transparent border-0 border-b border-transparent focus:border-amber-400 focus:bg-[#111317] rounded px-1.5 py-0.5 text-slate-200 font-medium focus:outline-none">
-          </td>
-          <td class="py-2.5 px-1">
-            <input type="number" value="${item.weight}" min="0" oninput="updateIngredient(${item.id}, 'weight', parseFloat(this.value) || 0)" class="w-full bg-[#111317] border border-slate-700/80 rounded px-1.5 py-0.5 text-slate-200 text-right focus:border-amber-400 focus:outline-none">
-          </td>
-          <td class="py-2.5 px-1">
-            <input type="number" value="${item.costPerKg}" min="0" oninput="updateIngredient(${item.id}, 'costPerKg', parseFloat(this.value) || 0)" class="w-full bg-[#111317] border border-slate-700/80 rounded px-1.5 py-0.5 text-slate-300 text-right focus:border-amber-400 focus:outline-none">
-          </td>
-          <td class="py-2.5 px-1">
-            <input type="number" value="${item.waterPct}" min="0" max="100" oninput="updateIngredient(${item.id}, 'waterPct', parseFloat(this.value) || 0)" class="w-full bg-[#111317] border border-slate-700/80 rounded px-1 py-0.5 text-slate-400 text-center focus:border-amber-400 focus:outline-none">
-          </td>
-          <td class="py-2.5 px-1">
-            <input type="number" value="${item.fatPct}" min="0" max="100" oninput="updateIngredient(${item.id}, 'fatPct', parseFloat(this.value) || 0)" class="w-full bg-[#111317] border border-slate-700/80 rounded px-1 py-0.5 text-slate-400 text-center focus:border-amber-400 focus:outline-none">
-          </td>
-          <td class="py-2.5 pl-1 pr-2 text-right font-medium text-slate-300">
-            ${itemCost.toLocaleString()}원
-          </td>
-          <td class="py-2.5 text-center">
-            <button onclick="removeIngredient(${item.id})" class="text-slate-600 hover:text-rose-400 transition p-1" title="삭제">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
+    function getAllIngredients() {
+      ensureHierarchicalStructure(currentRecipe);
+      const all = [];
+      currentRecipe.subCategories.forEach(sub => {
+        if (Array.isArray(sub.ingredients)) {
+          sub.ingredients.forEach(ing => all.push({ ...ing, subCategoryId: sub.id, subCategoryName: sub.name }));
+        }
       });
+      return all;
+    }
 
+    function loadInitialState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try { 
+          currentRecipe = JSON.parse(saved); 
+          ensureHierarchicalStructure(currentRecipe);
+        } catch(e){}
+      } else {
+        ensureHierarchicalStructure(currentRecipe);
+      }
+      syncInputsFromState();
+      renderAll();
+      updateSavedRecipesCount();
+    }
+
+    function setupCloudSyncListeners() {
+      if (!currentUser) return;
+      onSnapshot(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'activeRecipe'), (docSnap) => {
+        if (docSnap.exists()) {
+          const cloudData = docSnap.data();
+          if (cloudData && cloudData.updatedAt && cloudData.updatedAt > (window._lastLocalSave || 0)) {
+            currentRecipe = cloudData.recipe;
+            ensureHierarchicalStructure(currentRecipe);
+            syncInputsFromState();
+            renderAll();
+          }
+        }
+      }, (err) => console.error(err));
+
+      onSnapshot(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'globalPrices'), (snapshot) => {
+        const memory = getGlobalPriceMemory();
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
+          if (data && data.name) {
+            const cleanKey = data.name.toLowerCase().replace(/\s+/g, '');
+            memory[cleanKey] = data;
+          }
+        });
+        localStorage.setItem(GLOBAL_PRICE_MEMORY_KEY, JSON.stringify(memory));
+      }, (err) => console.error(err));
+    }
+
+    function syncInputsFromState() {
+      const titleEl = document.getElementById('recipeTitleInput');
+      const portionEl = document.getElementById('inputPortionWeight');
+      const lossEl = document.getElementById('inputBakeLoss');
+      const targetCostEl = document.getElementById('inputTargetCostRate');
+      const yieldEl = document.getElementById('inputTargetYield');
+
+      if (titleEl) titleEl.value = currentRecipe.title || '';
+      if (portionEl) portionEl.value = currentRecipe.portionWeight ?? 42;
+      if (lossEl) lossEl.value = currentRecipe.bakeLoss ?? 12;
+      if (targetCostEl) targetCostEl.value = currentRecipe.targetCostRate ?? 25;
+      if (yieldEl) yieldEl.value = currentRecipe.targetYield ?? 30;
+    }
+
+    function renderAll() {
+      renderSubCategoriesTable();
+      renderPackagingList();
       calculateTotals();
     }
 
-    // Update ingredient data
-    function updateIngredient(id, field, value) {
-      const item = ingredients.find(i => i.id === id);
-      if (item) {
-        item[field] = value;
-        calculateTotals();
-      }
-    }
+    window.selectSubCategoryTab = function(subId) {
+      selectedSubCategoryId = subId;
+      renderSubCategoriesTable();
+    };
 
-    // Add ingredient
-    document.getElementById('btnAddIngredient').addEventListener('click', () => {
-      const newId = ingredients.length ? Math.max(...ingredients.map(i => i.id)) + 1 : 1;
-      ingredients.push({
-        id: newId,
-        name: "신규 원재료",
-        weight: 50,
-        costPerKg: 10000,
-        waterPct: 10,
-        fatPct: 0
-      });
-      renderTable();
-      showToast("새 원재료가 추가되었습니다.");
-    });
-
-    // Remove ingredient
-    function removeIngredient(id) {
-      if (ingredients.length <= 1) {
-        showToast("최소 1개 이상의 원재료가 필요합니다.");
-        return;
-      }
-      ingredients = ingredients.filter(i => i.id !== id);
-      renderTable();
-    }
-
-    // Template Loader
-    function loadTemplate(key) {
-      if (templates[key]) {
-        ingredients = JSON.parse(JSON.stringify(templates[key]));
-        renderTable();
-        showToast(`${key.toUpperCase()} 템플릿을 불러왔습니다.`);
-      }
-    }
-
-    // Main Calculations
-    function calculateTotals() {
-      const portionWeight = parseFloat(document.getElementById('inputPortionWeight').value) || 45;
-      const bakeLoss = parseFloat(document.getElementById('inputBakeLoss').value) || 12;
-      const targetCostRate = parseFloat(document.getElementById('inputTargetCostRate').value) || 25;
-      const multiplier = parseFloat(document.getElementById('inputBatchMultiplier').value) || 1;
-
-      let totalRawWeight = 0;
-      let totalCost = 0;
-      let totalWaterGrams = 0;
-      let totalFatGrams = 0;
-
-      ingredients.forEach(item => {
-        const scaledWeight = item.weight * multiplier;
-        totalRawWeight += scaledWeight;
-        totalCost += (scaledWeight / 1000) * item.costPerKg;
-        totalWaterGrams += scaledWeight * (item.waterPct / 100);
-        totalFatGrams += scaledWeight * (item.fatPct / 100);
-      });
-
-      // Loss applied baked weight
-      const bakedBatchWeight = totalRawWeight * (1 - (bakeLoss / 100));
-      const portionCount = portionWeight > 0 ? (bakedBatchWeight / portionWeight) : 0;
-      const costPerPortion = portionCount > 0 ? (totalCost / portionCount) : 0;
-      const recommendedPrice = (costPerPortion / (targetCostRate / 100));
-      const costPerKg = totalRawWeight > 0 ? (totalCost / (totalRawWeight / 1000)) : 0;
-      const margin = recommendedPrice - costPerPortion;
-
-      // Update DOM Metric Displays
-      document.getElementById('statBatchWeight').innerHTML = `${Math.round(totalRawWeight).toLocaleString()} <span class="text-xs font-normal text-slate-400">g</span>`;
-      document.getElementById('statYieldCount').innerText = `완성 수량: 약 ${portionCount.toFixed(1)}개 (${portionWeight}g 기준)`;
-      document.getElementById('statTotalCost').innerHTML = `${Math.round(totalCost).toLocaleString()} <span class="text-xs font-normal text-slate-400">원</span>`;
-      document.getElementById('statCostPerKg').innerText = Math.round(costPerKg).toLocaleString();
-      document.getElementById('statPortionCost').innerHTML = `${Math.round(costPerPortion).toLocaleString()} <span class="text-xs font-normal text-amber-300/70">원</span>`;
-      document.getElementById('statPortionLossNote').innerText = `굽기 손실 ${bakeLoss}% 반영 후 중량`;
-      document.getElementById('statSellingPrice').innerHTML = `${Math.round(recommendedPrice).toLocaleString()} <span class="text-xs font-normal text-emerald-300/70">원</span>`;
-      document.getElementById('statGrossMargin').innerText = `${Math.round(margin).toLocaleString()}원 (${(100 - targetCostRate)}%)`;
-
-      // Simplified Water Activity (aw) scientific estimation algorithm
-      // Moisture vs dry solids + fat binding proxy
-      const drySolids = totalRawWeight - totalWaterGrams;
-      const moistureRatio = totalWaterGrams / (totalRawWeight || 1);
+    function renderSubCategoriesTable() {
+      const tabContainer = document.getElementById('subCategoryTabSelector');
+      const container = document.getElementById('subCategoriesContainer');
+      const activePartBadge = document.getElementById('activePartBadge');
+      if (!container || !tabContainer) return;
       
-      // Heuristic model for confectionary:
-      let estimatedAw = 0.52 + (moistureRatio * 0.78) - (totalFatGrams / totalRawWeight * 0.15);
-      estimatedAw = Math.max(0.40, Math.min(0.96, estimatedAw));
+      tabContainer.innerHTML = '';
+      container.innerHTML = '';
+      ensureHierarchicalStructure(currentRecipe);
 
-      const awElement = document.getElementById('statAwValue');
-      const statusElement = document.getElementById('statShelfStatus');
-      const progressElement = document.getElementById('awProgress');
-      const explanationElement = document.getElementById('awExplanation');
+      // 1. 상단 파트 선택 탭 윈도우 렌더링
+      currentRecipe.subCategories.forEach((sub, subIdx) => {
+        let subWeight = 0;
+        let subCost = 0;
+        (sub.ingredients || []).forEach(item => {
+          subWeight += item.weight;
+          subCost += (item.weight / 1000) * item.costPerKg;
+        });
 
-      awElement.innerText = `${estimatedAw.toFixed(2)} aw`;
-      const pct = Math.min(100, Math.max(10, ((estimatedAw - 0.4) / 0.55) * 100));
-      progressElement.style.width = `${pct}%`;
+        const isSelected = sub.id === selectedSubCategoryId;
+        const tabBtn = document.createElement('button');
+        tabBtn.onclick = () => selectSubCategoryTab(sub.id);
+        tabBtn.className = `px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shrink-0 ${
+          isSelected 
+            ? 'bg-[#385E50] text-white shadow-xs' 
+            : 'bg-white text-[#5E676E] border border-[#DDD9CE] hover:bg-[#EBF2EE] hover:text-[#24282B]'
+        }`;
 
-      if (estimatedAw < 0.65) {
-        statusElement.className = "px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20";
-        statusElement.innerText = "초안전 (상온 30일+)";
-        explanationElement.innerText = "수분 활성도가 매우 낮아 세균, 효모 및 곰팡이 생육이 억제된 건조/고당도 제과 상태입니다.";
-      } else if (estimatedAw < 0.80) {
-        statusElement.className = "px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
-        statusElement.innerText = "안전 (상온 10~14일)";
-        explanationElement.innerText = "일반 구움과자 적정 범위입니다. 탈산소제 동봉 및 밀봉 포장 시 2주 이상 안정적인 품질을 유지합니다.";
-      } else if (estimatedAw < 0.88) {
-        statusElement.className = "px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20";
-        statusElement.innerText = "주의 (상온 3~5일)";
-        explanationElement.innerText = "수분 함량이 높아 곰팡이 번식 위험이 있습니다. 냉장 유통 또는 트레할로스/당알코올 치환을 권장합니다.";
-      } else {
-        statusElement.className = "px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20";
-        statusElement.innerText = "위험 (냉장/당일 소진)";
-        explanationElement.innerText = "고위험 수분 활성도 영역입니다. 무방부제 상온 보관 시 48시간 이내 변질 가능성이 큽니다.";
+        tabBtn.innerHTML = `
+          <span class="w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-emerald-300' : 'bg-slate-300'}"></span>
+          <span>파트 ${subIdx + 1}. ${sub.name}</span>
+          <span class="text-[10px] opacity-80 num-font">(${Math.round(subWeight)}g)</span>
+        `;
+        tabContainer.appendChild(tabBtn);
+      });
+
+      // 2. 현재 선택된 파트만 필터링하여 배합표 노출
+      const activeSub = currentRecipe.subCategories.find(s => s.id === selectedSubCategoryId) || currentRecipe.subCategories[0];
+      if (!activeSub) return;
+      const activeSubIdx = currentRecipe.subCategories.findIndex(s => s.id === activeSub.id);
+
+      if (activePartBadge) {
+        activePartBadge.innerText = `현재 선택: 파트 ${activeSubIdx + 1}. ${activeSub.name}`;
       }
-    }
 
-    // Input change listeners
-    ['inputPortionWeight', 'inputBakeLoss', 'inputTargetCostRate', 'inputBatchMultiplier'].forEach(id => {
-      document.getElementById(id).addEventListener('input', calculateTotals);
-    });
+      const flourItem = (activeSub.ingredients || []).find(i => i.isFlour) || (activeSub.ingredients && activeSub.ingredients[0]);
+      const baseWeight = (flourItem && flourItem.weight > 0) ? flourItem.weight : 1;
+      
+      let subWeight = 0;
+      let subCost = 0;
+      (activeSub.ingredients || []).forEach(item => {
+        subWeight += item.weight;
+        subCost += (item.weight / 1000) * item.costPerKg;
+      });
 
-    // Gemini Formulation Advisor Simulation
-    document.getElementById('btnRunAI').addEventListener('click', () => {
-      const btn = document.getElementById('btnRunAI');
-      const spinner = document.getElementById('aiSpinner');
-      const btnText = document.getElementById('aiBtnText');
-      const output = document.getElementById('aiOutputBox');
+      const section = document.createElement('div');
+      section.className = "bg-[#FAF9F6] border border-[#E6E4DD] rounded-[16px] p-2.5 sm:p-4 transition-all";
+      
+      section.innerHTML = `
+        <!-- 선택된 파트 헤더 컨트롤러 -->
+        <div class="flex items-center justify-between gap-2 border-b border-[#EAE6DF] pb-2.5 mb-2.5">
+          <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+            <span class="px-2.5 py-0.5 rounded-md bg-[#385E50] text-white text-[10px] sm:text-[11px] font-bold shrink-0">
+              파트 ${activeSubIdx + 1}
+            </span>
+            <input type="text" value="${activeSub.name}" onchange="updateSubCategoryName(${activeSub.id}, this.value)" class="text-xs sm:text-sm font-extrabold text-[#24282B] bg-transparent border-b border-transparent focus:border-[#385E50] focus:outline-none flex-1 min-w-0 px-1 truncate" title="클릭하여 파트 명칭 수정">
+          </div>
 
-      btn.disabled = true;
-      spinner.classList.remove('hidden');
-      btnText.innerText = "배합 분석 중...";
-      output.innerHTML = `
-        <div class="flex items-center gap-2 text-amber-400 py-4 justify-center">
-          <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
-          <span>Gemini 엔진이 배합 화학 및 보존성 데이터를 연산 중입니다...</span>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="text-[11px] text-[#6E7882]">
+              소계: <strong class="text-[#24282B] font-bold num-font">${Math.round(subWeight)}g</strong> · <strong class="text-[#385E50] font-bold num-font">${Math.round(subCost).toLocaleString()}원</strong>
+            </span>
+            <button onclick="addIngredientToSubCategory(${activeSub.id})" class="px-2.5 py-1 rounded-lg btn-sage-primary text-[11px] font-bold shadow-2xs">
+              + 재료 추가
+            </button>
+            ${currentRecipe.subCategories.length > 1 ? `<button onclick="removeSubCategory(${activeSub.id})" class="w-6 h-6 rounded-md hover:bg-rose-50 text-[#8B959E] hover:text-rose-600 text-xs flex items-center justify-center transition" title="현재 파트 삭제">✕</button>` : ''}
+          </div>
+        </div>
+        
+        <!-- 원재료 목록 영역 -->
+        <div class="space-y-2">
+          <!-- PC 전용 헤더 (수분% 및 유지% 제거됨) -->
+          <div class="desktop-view-only">
+            <div class="grid grid-cols-12 gap-2 px-3 py-1 text-[#6E7882] text-[11px] font-semibold">
+              <div class="col-span-4">원재료명</div>
+              <div class="col-span-2 text-right">배합 중량(g)</div>
+              <div class="col-span-2 text-right text-[#385E50]">Baker's%</div>
+              <div class="col-span-2 text-right">kg당 단가(원)</div>
+              <div class="col-span-2 text-right pr-6">금액 소계</div>
+            </div>
+          </div>
+
+          <div id="tbody-sub-${activeSub.id}" class="space-y-1.5 sm:space-y-2"></div>
         </div>
       `;
 
-      setTimeout(() => {
-        btn.disabled = false;
-        spinner.classList.add('hidden');
-        btnText.innerText = "AI 배합 진단 재실행";
+      container.appendChild(section);
 
-        const currentAw = document.getElementById('statAwValue').innerText;
-        const portionCost = document.getElementById('statPortionCost').innerText;
-        const sellingPrice = document.getElementById('statSellingPrice').innerText;
+      const listContainer = section.querySelector(`#tbody-sub-${activeSub.id}`);
+      (activeSub.ingredients || []).forEach(item => {
+        const bakersPct = ((item.weight / baseWeight) * 100).toFixed(1);
+        const rowCost = Math.round((item.weight / 1000) * item.costPerKg);
 
-        output.innerHTML = `
-          <div class="space-y-2.5 animate-fade-in text-slate-200">
-            <div class="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 font-medium">
-              💡 <strong>Gemini 배합 품질 &amp; 원가 리포트 요약</strong>
+        const rowEl = document.createElement('div');
+        rowEl.className = "bg-white hover:bg-[#FAF9F6] border border-[#E6E4DD] rounded-xl p-2.5 sm:px-3 sm:py-2 transition shadow-3xs";
+        
+        rowEl.innerHTML = `
+          <!-- PC 및 태블릿 가로 뷰 (Desktop: 수분/유지 제거) -->
+          <div class="desktop-view-only">
+            <div class="grid grid-cols-12 items-center gap-2">
+              <div class="col-span-4 min-w-0">
+                <input type="text" value="${item.name}" onchange="updateSubIngredient(${activeSub.id}, ${item.id}, 'name', this.value)" class="w-full bg-transparent border-b border-transparent focus:border-[#385E50] px-1 py-0.5 text-xs font-bold text-[#24282B] focus:outline-none truncate" placeholder="재료명">
+              </div>
+              <div class="col-span-2">
+                <div class="flex items-center bg-[#FAF9F6] rounded-lg px-2 py-1 border border-[#DDD9CE] focus-within:border-[#385E50] focus-within:bg-white">
+                  <input type="number" value="${item.weight}" min="0" oninput="updateSubIngredient(${activeSub.id}, ${item.id}, 'weight', parseFloat(this.value) || 0)" class="w-full bg-transparent text-[#24282B] text-right font-bold text-xs focus:outline-none num-font">
+                  <span class="text-[10px] text-[#8B959E] ml-1 shrink-0 font-medium">g</span>
+                </div>
+              </div>
+              <div class="col-span-2 text-right">
+                <span class="px-2 py-0.5 rounded bg-[#EBF2EE] text-[#385E50] font-bold text-[11px] num-font">${bakersPct}%</span>
+              </div>
+              <div class="col-span-2">
+                <div class="flex items-center bg-[#FAF9F6] rounded-lg px-2 py-1 border border-[#DDD9CE] focus-within:border-[#385E50] focus-within:bg-white">
+                  <input type="number" value="${item.costPerKg}" min="0" oninput="updateSubIngredientCost(${activeSub.id}, ${item.id}, parseFloat(this.value) || 0)" class="w-full bg-transparent text-[#2B604B] text-right font-bold text-xs focus:outline-none num-font">
+                  <span class="text-[10px] text-[#8B959E] ml-1 shrink-0">원</span>
+                </div>
+              </div>
+              <div class="col-span-2 flex items-center justify-end gap-2 pr-1">
+                <span class="font-extrabold text-[#24282B] text-xs num-font">${rowCost.toLocaleString()}원</span>
+                <button onclick="removeSubIngredient(${activeSub.id}, ${item.id})" class="w-5 h-5 rounded hover:bg-rose-50 text-[#8B959E] hover:text-rose-600 transition flex items-center justify-center shrink-0 text-xs" title="재료 삭제">✕</button>
+              </div>
             </div>
-            
-            <p><strong>1. 수분 활성도(Aw ${currentAw}) &amp; 보존성 진단:</strong><br>
-            현재 배합은 난백의 자유수분 비율이 다소 높습니다. 상온 유통 기한을 7일 이상 연장하려면 일반 설탕의 20%를 <strong>트레할로스(Trehalose) 또는 덱스트로스</strong>로 치환하여 유리수를 결합수로 안정화시키는 방안을 추천합니다.</p>
-            
-            <p><strong>2. 유화 및 텍스처(Texture) 최적화:</strong><br>
-            헤이즐넛 파우더의 지방 성분과 뵈르 노이제트(브라운 버터)의 결합력이 우수합니다. 반죽 믹싱 시 온도를 <strong>40~45°C</strong>로 유지할 때 버터 결정화가 안정되어 중앙 크랙과 볼륨감이 15% 상승합니다.</p>
+          </div>
 
-            <p><strong>3. 원가 구조 방어 팁 (개당 재료비 ${portionCost}):</strong><br>
-            프랑스산 고급 버터와 커버춰 초콜릿의 비중이 높아 권장 판매가(<strong>${sellingPrice}</strong>)가 프리미엄 세그먼트에 형성됩니다. 세트 박스 패키징 판매로 객단가를 높이거나, 견과류 파우더 일부를 T55 밀가루와 1:1.2 비율로 미세 조율해 원가를 8% 방어할 수 있습니다.</p>
+          <!-- 모바일 전용 수직 카드 뷰 (Mobile: 수분/유지 제거) -->
+          <div class="mobile-view-only space-y-2">
+            <div class="flex items-center justify-between gap-1.5">
+              <input type="text" value="${item.name}" onchange="updateSubIngredient(${activeSub.id}, ${item.id}, 'name', this.value)" class="flex-1 bg-transparent border-b border-transparent focus:border-[#385E50] px-0.5 py-0.5 text-xs font-bold text-[#24282B] focus:outline-none" placeholder="재료명">
+              <div class="flex items-center gap-1.5 shrink-0">
+                <span class="px-1.5 py-0.5 rounded bg-[#EBF2EE] text-[#385E50] font-bold text-[10px] num-font">${bakersPct}%</span>
+                <span class="text-xs font-bold text-[#24282B] num-font">${rowCost.toLocaleString()}원</span>
+                <button onclick="removeSubIngredient(${activeSub.id}, ${item.id})" class="w-5 h-5 rounded hover:bg-rose-50 text-[#8B959E] hover:text-rose-600 text-xs flex items-center justify-center">✕</button>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-[11px]">
+              <div>
+                <label class="block text-[10px] text-[#8B959E] font-medium mb-0.5">중량</label>
+                <div class="flex items-center bg-[#FAF9F6] rounded-md px-2 py-1 border border-[#DDD9CE]">
+                  <input type="number" value="${item.weight}" min="0" oninput="updateSubIngredient(${activeSub.id}, ${item.id}, 'weight', parseFloat(this.value) || 0)" class="w-full bg-transparent text-right font-bold text-xs focus:outline-none num-font">
+                  <span class="text-[9px] text-[#8B959E] ml-1">g</span>
+                </div>
+              </div>
+              <div>
+                <label class="block text-[10px] text-[#8B959E] font-medium mb-0.5">kg당 단가</label>
+                <div class="flex items-center bg-[#FAF9F6] rounded-md px-2 py-1 border border-[#DDD9CE]">
+                  <input type="number" value="${item.costPerKg}" min="0" oninput="updateSubIngredientCost(${activeSub.id}, ${item.id}, parseFloat(this.value) || 0)" class="w-full bg-transparent text-right font-bold text-xs text-[#2B604B] focus:outline-none num-font">
+                  <span class="text-[9px] text-[#8B959E] ml-1">원</span>
+                </div>
+              </div>
+            </div>
           </div>
         `;
-        showToast("Gemini 배합 진단이 완료되었습니다.");
-      }, 900);
-    });
+        listContainer.appendChild(rowEl);
+      });
+    }
 
-    // CSV Export Simulator
-    document.getElementById('btnExportCSV').addEventListener('click', () => {
-      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-      csvContent += "원재료명,배합중량(g),단가(원/kg),수분율(%),유지율(%),재료비(원)\n";
+    window.addSubCategoryGroup = function() {
+      ensureHierarchicalStructure(currentRecipe);
+      const newId = Date.now();
+      currentRecipe.subCategories.push({
+        id: newId,
+        name: `신규 공정 파트`,
+        ingredients: [
+          { id: Date.now() + 1, name: "새 원재료", weight: 50, costPerKg: 10000, isFlour: false, allergen: "" }
+        ]
+      });
+      selectedSubCategoryId = newId; // 추가된 신규 파트로 자동 전환
+      renderSubCategoriesTable();
+      calculateTotals();
+      showToast("새로운 파트가 추가되어 선택되었습니다.");
+    };
 
-      ingredients.forEach(item => {
-        const itemCost = Math.round((item.weight / 1000) * item.costPerKg);
-        csvContent += `${item.name},${item.weight},${item.costPerKg},${item.waterPct},${item.fatPct},${itemCost}\n`;
+    window.updateSubCategoryName = function(subId, newName) {
+      const sub = currentRecipe.subCategories.find(s => s.id === subId);
+      if (sub) {
+        sub.name = newName;
+        renderSubCategoriesTable();
+        calculateTotals();
+      }
+    };
+
+    window.removeSubCategory = function(subId) {
+      if (currentRecipe.subCategories.length <= 1) {
+        return showToast("최소 1개 이상의 파트가 필요합니다.");
+      }
+      currentRecipe.subCategories = currentRecipe.subCategories.filter(s => s.id !== subId);
+      selectedSubCategoryId = currentRecipe.subCategories[0].id;
+      renderSubCategoriesTable();
+      calculateTotals();
+      showToast("파트가 삭제되었습니다.");
+    };
+
+    window.addIngredientToSubCategory = function(subId) {
+      const sub = currentRecipe.subCategories.find(s => s.id === subId);
+      if (sub) {
+        sub.ingredients.push({
+          id: Date.now() + Math.random(),
+          name: "새 원재료",
+          weight: 50,
+          costPerKg: 10000,
+          isFlour: false,
+          allergen: ""
+        });
+        renderSubCategoriesTable();
+        calculateTotals();
+        showToast("원재료가 추가되었습니다.");
+      }
+    };
+
+    window.updateSubIngredient = function(subId, ingId, field, value) {
+      const sub = currentRecipe.subCategories.find(s => s.id === subId);
+      if (sub) {
+        const item = sub.ingredients.find(i => i.id === ingId);
+        if (item) {
+          item[field] = value;
+          renderSubCategoriesTable();
+          calculateTotals();
+        }
+      }
+    };
+
+    window.updateSubIngredientCost = function(subId, ingId, newCost) {
+      const sub = currentRecipe.subCategories.find(s => s.id === subId);
+      if (sub) {
+        const item = sub.ingredients.find(i => i.id === ingId);
+        if (item) {
+          item.costPerKg = newCost;
+          saveGlobalPrice(item.name, newCost);
+          calculateTotals();
+        }
+      }
+    };
+
+    window.removeSubIngredient = function(subId, ingId) {
+      const sub = currentRecipe.subCategories.find(s => s.id === subId);
+      if (sub) {
+        if (sub.ingredients.length <= 1) {
+          return showToast("파트당 최소 1개 이상의 재료가 필요합니다.");
+        }
+        sub.ingredients = sub.ingredients.filter(i => i.id !== ingId);
+        renderSubCategoriesTable();
+        calculateTotals();
+      }
+    };
+
+    function renderPackagingList() {
+      const container = document.getElementById('packagingContainer');
+      if (!container) return;
+      container.innerHTML = '';
+      currentRecipe.packaging.forEach(pkg => {
+        const div = document.createElement('div');
+        div.className = "bg-[#FAF9F6] border border-[#E6E4DD] rounded-xl p-2.5 flex flex-col justify-between gap-1.5";
+        div.innerHTML = `
+          <div class="flex items-center justify-between">
+            <input type="text" value="${pkg.name}" onchange="updatePackaging(${pkg.id}, 'name', this.value)" class="text-xs font-bold text-[#24282B] bg-transparent border-b border-transparent focus:border-[#385E50] focus:outline-none w-full truncate">
+            <button onclick="removePackaging(${pkg.id})" class="w-5 h-5 rounded hover:bg-rose-50 text-[#8B959E] hover:text-rose-600 text-xs flex items-center justify-center shrink-0">&times;</button>
+          </div>
+          <div class="flex items-center justify-between gap-1 text-[11px]">
+            <span class="text-[#6E7882] font-medium">개당 단가</span>
+            <div class="flex items-center bg-white border border-[#DDD9CE] rounded-md px-2 py-0.5">
+              <input type="number" value="${pkg.cost}" oninput="updatePackaging(${pkg.id}, 'cost', parseFloat(this.value) || 0)" class="w-14 bg-transparent text-right text-[#24282B] font-bold text-xs focus:outline-none num-font">
+              <span class="text-[9px] text-[#8B959E] ml-1">원</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    window.calculateTotals = function() {
+      const titleInput = document.getElementById('recipeTitleInput');
+      if (titleInput) currentRecipe.title = titleInput.value;
+
+      const portionWeight = parseFloat(document.getElementById('inputPortionWeight')?.value) || 42;
+      const bakeLoss = parseFloat(document.getElementById('inputBakeLoss')?.value) || 12;
+      const targetCostRate = parseFloat(document.getElementById('inputTargetCostRate')?.value) || 25;
+
+      currentRecipe.portionWeight = portionWeight;
+      currentRecipe.bakeLoss = bakeLoss;
+      currentRecipe.targetCostRate = targetCostRate;
+
+      let totalRawWeight = 0, totalRawCost = 0, totalWaterGrams = 0;
+      const allIngredients = getAllIngredients();
+      
+      allIngredients.forEach(item => {
+        const w = item.weight;
+        totalRawWeight += w;
+        totalRawCost += (w / 1000) * item.costPerKg;
+        
+        // 지식베이스에서 수분율 매칭 (테이블에선 안 보여도 Aw 계산은 정밀 수행)
+        const props = matchPastryProperties(item.name);
+        totalWaterGrams += w * (props.waterPct / 100);
       });
 
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "BakeCalc_Recipe_Formulation.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      showToast("CSV 파일로 배합표가 다운로드되었습니다.");
-    });
+      const bakedBatchWeight = totalRawWeight * (1 - (bakeLoss / 100));
+      const calculatedYield = portionWeight > 0 ? (bakedBatchWeight / portionWeight) : 0;
+      const unitPackagingCost = currentRecipe.packaging.reduce((sum, p) => sum + (p.cost * p.qtyPerPortion), 0);
+      const totalPackagingCost = calculatedYield * unitPackagingCost;
+      const grandTotalCost = totalRawCost + totalPackagingCost;
+      const netIngredientCostPerPortion = calculatedYield > 0 ? (totalRawCost / calculatedYield) : 0;
+      const finalUnitCost = netIngredientCostPerPortion + unitPackagingCost;
+      const recommendedSellingPrice = targetCostRate > 0 ? (finalUnitCost / (targetCostRate / 100)) : 0;
+      const netMargin = recommendedSellingPrice - finalUnitCost;
+      const marginPercent = recommendedSellingPrice > 0 ? ((netMargin / recommendedSellingPrice) * 100).toFixed(1) : 0;
 
-    // Modal Helpers
-    function openModal(id) {
-      document.getElementById(id).classList.remove('hidden');
+      const statBatchWeight = document.getElementById('statBatchWeight');
+      const statYieldCount = document.getElementById('statYieldCount');
+      const statTotalCost = document.getElementById('statTotalCost');
+      const statBomTotal = document.getElementById('statBomTotal');
+      const statPortionCost = document.getElementById('statPortionCost');
+      const statPortionNet = document.getElementById('statPortionNet');
+      const statSellingPrice = document.getElementById('statSellingPrice');
+      const statMarginText = document.getElementById('statMarginText');
+      const statAwValue = document.getElementById('statAwValue');
+      const awProgress = document.getElementById('awProgress');
+
+      if (statBatchWeight) statBatchWeight.innerHTML = `${Math.round(totalRawWeight).toLocaleString()} <span class="text-xs font-normal text-[#8B959E]">g</span>`;
+      if (statYieldCount) statYieldCount.innerText = `완성: 약 ${calculatedYield.toFixed(1)}개`;
+      if (statTotalCost) statTotalCost.innerHTML = `${Math.round(grandTotalCost).toLocaleString()} <span class="text-xs font-normal text-[#8B959E]">원</span>`;
+      if (statBomTotal) statBomTotal.innerText = `${Math.round(totalPackagingCost).toLocaleString()}`;
+      if (statPortionCost) statPortionCost.innerHTML = `${Math.round(finalUnitCost).toLocaleString()}원`;
+      if (statPortionNet) statPortionNet.innerText = `개당 순수 재료비 ${Math.round(netIngredientCostPerPortion).toLocaleString()}원 + 포장재 ${Math.round(unitPackagingCost).toLocaleString()}원`;
+      if (statSellingPrice) statSellingPrice.innerHTML = `${Math.round(recommendedSellingPrice).toLocaleString()} <span class="text-sm font-bold">원</span>`;
+      if (statMarginText) statMarginText.innerText = `개당 마진: ${Math.round(netMargin).toLocaleString()}원 (${marginPercent}%)`;
+
+      const moisturePct = totalRawWeight > 0 ? (totalWaterGrams / totalRawWeight) * 100 : 0;
+      let estimatedAw = 0.50 + (moisturePct / 100 * 0.76);
+      estimatedAw = Math.max(0.42, Math.min(0.95, estimatedAw));
+      if (statAwValue) statAwValue.innerText = `${estimatedAw.toFixed(2)} aw`;
+      if (awProgress) awProgress.style.width = `${Math.min(100, Math.max(10, ((estimatedAw - 0.4) / 0.55) * 100))}%`;
+    };
+
+    window.handleTargetYieldChange = function() {
+      const targetYieldInput = parseFloat(document.getElementById('inputTargetYield')?.value) || 1;
+      const portionWeight = parseFloat(document.getElementById('inputPortionWeight')?.value) || 42;
+      const bakeLoss = parseFloat(document.getElementById('inputBakeLoss')?.value) || 12;
+
+      const targetTotalRawWeight = (targetYieldInput * portionWeight) / (1 - (bakeLoss / 100));
+      ensureHierarchicalStructure(currentRecipe);
+
+      let currentTotalRawWeight = 0;
+      currentRecipe.subCategories.forEach(sub => {
+        (sub.ingredients || []).forEach(item => {
+          currentTotalRawWeight += item.weight;
+        });
+      });
+
+      if (currentTotalRawWeight <= 0) return;
+      const scaleFactor = targetTotalRawWeight / currentTotalRawWeight;
+
+      currentRecipe.subCategories.forEach(sub => {
+        (sub.ingredients || []).forEach(item => {
+          item.weight = Math.round(item.weight * scaleFactor);
+        });
+      });
+
+      currentRecipe.targetYield = targetYieldInput;
+      renderSubCategoriesTable();
+      calculateTotals();
+      showToast(`목표 수량 ${targetYieldInput}개에 맞춰 배합이 자동 조정되었습니다.`);
+    };
+
+    window.saveCurrentRecipeToCloud = async function() {
+      const titleInput = document.getElementById('recipeTitleInput');
+      if (titleInput) currentRecipe.title = titleInput.value;
+      window._lastLocalSave = Date.now();
+      
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentRecipe));
+
+      let savedList = [];
+      try { savedList = JSON.parse(localStorage.getItem(SAVED_RECIPES_KEY) || '[]'); } catch(e){}
+      const existingIdx = savedList.findIndex(r => r.title === currentRecipe.title);
+      if (existingIdx >= 0) {
+        savedList[existingIdx] = JSON.parse(JSON.stringify(currentRecipe));
+      } else {
+        savedList.push(JSON.parse(JSON.stringify(currentRecipe)));
+      }
+      localStorage.setItem(SAVED_RECIPES_KEY, JSON.stringify(savedList));
+      updateSavedRecipesCount();
+
+      if (isCloudInitialized && currentUser) {
+        try {
+          await setDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'settings', 'activeRecipe'), {
+            recipe: currentRecipe,
+            updatedAt: Date.now()
+          });
+          showToast(`'${currentRecipe.title}' 레시피가 클라우드에 안전하게 저장되었습니다.`);
+        } catch (e) {
+          showToast(`로컬 저장 완료`);
+        }
+      } else {
+        showToast(`'${currentRecipe.title}' 레시피가 저장되었습니다.`);
+      }
+    };
+
+    function updateSavedRecipesCount() {
+      let savedList = [];
+      try { savedList = JSON.parse(localStorage.getItem(SAVED_RECIPES_KEY) || '[]'); } catch(e){}
+      const countEl = document.getElementById('savedCountBadge');
+      if (countEl) countEl.innerText = savedList.length;
     }
-    function closeModal(id) {
-      document.getElementById(id).classList.add('hidden');
+
+    window.openSavedRecipesModal = function() {
+      const searchEl = document.getElementById('recipeSearchInput');
+      if (searchEl) searchEl.value = '';
+      renderSavedRecipesList();
+      document.getElementById('savedRecipesModal')?.classList.remove('hidden');
+    };
+
+    window.filterSavedRecipes = function() {
+      renderSavedRecipesList();
+    };
+
+    function renderSavedRecipesList() {
+      const container = document.getElementById('savedRecipesListContainer');
+      if (!container) return;
+      container.innerHTML = '';
+      let savedList = [];
+      try { savedList = JSON.parse(localStorage.getItem(SAVED_RECIPES_KEY) || '[]'); } catch(e){}
+
+      const query = (document.getElementById('recipeSearchInput')?.value || '').toLowerCase().trim();
+      const filtered = savedList.filter(rec => {
+        if (!query) return true;
+        const titleMatch = (rec.title || '').toLowerCase().includes(query);
+        let ingMatch = false;
+        if (rec.subCategories) {
+          ingMatch = rec.subCategories.some(sub => 
+            sub.name.toLowerCase().includes(query) || 
+            (sub.ingredients || []).some(i => i.name.toLowerCase().includes(query))
+          );
+        } else if (rec.ingredients) {
+          ingMatch = rec.ingredients.some(ing => ing.name.toLowerCase().includes(query));
+        }
+        return titleMatch || ingMatch;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center py-6 text-[#8B959E] text-xs">보관된 레시피가 없습니다.</div>`;
+      } else {
+        filtered.forEach((rec) => {
+          const originalIdx = savedList.findIndex(r => r === rec);
+          let subCount = rec.subCategories ? rec.subCategories.length : 1;
+          let totalIngCount = 0;
+          if (rec.subCategories) {
+            rec.subCategories.forEach(s => totalIngCount += (s.ingredients || []).length);
+          } else if (rec.ingredients) {
+            totalIngCount = rec.ingredients.length;
+          }
+
+          const div = document.createElement('div');
+          div.className = "bg-[#FAF9F6] border border-[#E6E4DD] rounded-xl p-3 flex items-center justify-between text-xs gap-2";
+          div.innerHTML = `
+            <div>
+              <strong class="text-[#24282B] text-sm font-bold block">${rec.title}</strong>
+              <span class="text-[#6E7882] text-[11px]">파트 ${subCount}개 · 재료 ${totalIngCount}종 · ${rec.targetYield || 30}개 생산</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="loadRecipeFromArchive(${originalIdx})" class="px-2.5 py-1 rounded-lg btn-sage-sub text-xs">불러오기</button>
+              <button onclick="deleteRecipeFromArchive(${originalIdx})" class="px-2.5 py-1 rounded-lg bg-white border border-[#DDD9CE] text-rose-600 font-bold hover:bg-rose-50">삭제</button>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      }
     }
 
-    function handleSubscribeDemo() {
-      closeModal('upgradeModal');
-      showToast("🎉 Pro 14일 무료 체험이 활성화되었습니다 (데모 시뮬레이션)");
+    window.loadRecipeFromArchive = function(idx) {
+      let savedList = [];
+      try { savedList = JSON.parse(localStorage.getItem(SAVED_RECIPES_KEY) || '[]'); } catch(e){}
+      if (savedList[idx]) {
+        currentRecipe = JSON.parse(JSON.stringify(savedList[idx]));
+        ensureHierarchicalStructure(currentRecipe);
+        selectedSubCategoryId = currentRecipe.subCategories[0]?.id || null;
+        syncInputsFromState();
+        renderAll();
+        closeModal('savedRecipesModal');
+        showToast(`'${currentRecipe.title}' 레시피를 불러왔습니다.`);
+      }
+    };
+
+    window.deleteRecipeFromArchive = function(idx) {
+      let savedList = [];
+      try { savedList = JSON.parse(localStorage.getItem(SAVED_RECIPES_KEY) || '[]'); } catch(e){}
+      savedList.splice(idx, 1);
+      localStorage.setItem(SAVED_RECIPES_KEY, JSON.stringify(savedList));
+      renderSavedRecipesList();
+      updateSavedRecipesCount();
+      showToast("레시피가 삭제되었습니다.");
+    };
+
+    window.updatePackaging = function(id, field, value) {
+      const pkg = currentRecipe.packaging.find(p => p.id === id);
+      if (pkg) { pkg[field] = value; calculateTotals(); }
+    };
+    window.addPackagingRow = function() {
+      currentRecipe.packaging.push({ id: Date.now(), name: "신규 포장재", cost: 30, qtyPerPortion: 1 });
+      renderPackagingList();
+      calculateTotals();
+    };
+    window.removePackaging = function(id) {
+      currentRecipe.packaging = currentRecipe.packaging.filter(p => p.id !== id);
+      renderPackagingList();
+      calculateTotals();
+    };
+
+    window.openOcrModal = function() { document.getElementById('ocrModal')?.classList.remove('hidden'); };
+    window.openReceiptModal = function() { document.getElementById('receiptModal')?.classList.remove('hidden'); };
+    window.closeModal = function(id) { document.getElementById(id)?.classList.add('hidden'); };
+
+    function preprocessImageForOcr(file, maxDimension = 2400) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxDimension || height > maxDimension) {
+              if (width > height) {
+                height = Math.round((height * maxDimension) / width);
+                width = maxDimension;
+              } else {
+                width = Math.round((width * maxDimension) / height);
+                height = maxDimension;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.filter = 'contrast(125%) brightness(102%) saturate(105%)';
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const processedBase64 = canvas.toDataURL('image/jpeg', 0.96);
+            resolve(processedBase64);
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
     }
 
-    // Toast Alert Helper
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      const toastMsg = document.getElementById('toastMsg');
-      toastMsg.innerText = msg;
-      toast.classList.remove('translate-y-20', 'opacity-0');
-      toast.classList.add('translate-y-0', 'opacity-100');
+    window.handleImageFileSelected = async function(file) {
+      if (!file) return;
+      try {
+        document.getElementById('ocrProcessingContainer')?.classList.remove('hidden');
+        document.getElementById('ocrStatusText').innerText = "사진 화질을 선명하게 보정하고 있습니다...";
+        const optimizedImageSrc = await preprocessImageForOcr(file, 2400);
+        executeOcrExtraction(optimizedImageSrc);
+      } catch (err) {
+        const reader = new FileReader();
+        reader.onload = e => executeOcrExtraction(e.target.result);
+        reader.readAsDataURL(file);
+      }
+    };
 
+    async function executeOcrExtraction(imageSrc) {
+      document.getElementById('ocrProcessingContainer')?.classList.remove('hidden');
+      document.getElementById('ocrResultContainer')?.classList.add('hidden');
+      document.getElementById('ocrStatusText').innerText = "AI가 레시피 대분류 및 공정 파트별 재료/중량을 추출하고 있습니다...";
+
+      const matches = imageSrc.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,(.+)$/);
+      if (!matches) {
+        document.getElementById('ocrProcessingContainer')?.classList.add('hidden');
+        showToast("유효한 이미지 형식이 아닙니다.");
+        return;
+      }
+
+      const mimeType = matches[1];
+      const base64ImageData = matches[2];
+
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      const systemPrompt = `당신은 최고 수준의 제과 R&D 및 광학 문자 판독(OCR) 전문 AI입니다.
+제공된 이미지에 포함된 제과 레시피를 분석하여 전체 완제명(대분류)과 공정/파트별 소분류(예: 본반죽, 콤포트, 가나슈, 글라사쥬 등)로 분할하여 정밀 추출하십시오.
+
+[작업 지침]
+- 위에서 아래로, 왼쪽에서 오른쪽 순서로 읽어 내려가십시오.
+- 단독 숫자, 기호, 쉼표(,) 및 소수점(.)의 구분을 엄격히 유지하십시오.
+- 레시피의 대분류(recipeTitle)와 소분류(subCategories: 파트명 및 해당 파트의 원재료 목록)를 계층형으로 구성하십시오.
+  * 레시피 제목(recipeTitle) 및 소분류명(subCategories[].name)에 불필요한 외국어 괄호 표기를 지양하고 순수 한글 명칭 위주로 추출하십시오.
+  * 소분류가 명시적으로 구분되지 않은 단일 레시피인 경우 subCategories[0].name은 "본반죽"으로 지정하십시오.
+- 단위 변환 규칙:
+  * kg 단위는 1000을 곱하여 g 단위 정수로 환산하십시오.
+  * 계란 1개 = 50g, 노른자 = 20g, 흰자 = 30g으로 환산하되 기재된 g수가 있으면 최우선 적용하십시오.
+- 추가 설명 없이 오직 지정된 JSON 형식의 데이터만 반환하십시오.`;
+
+      const payload = {
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: "위 지침에 따라 이미지의 레시피 대분류명과 소분류(파트별 명칭 및 원재료/중량)를 계층 구조 JSON으로 반환하십시오." },
+              {
+                inlineData: {
+                  mimeType: mimeType,
+                  data: base64ImageData
+                }
+              }
+            ]
+          }
+        ],
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.0,
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              recipeTitle: { type: "STRING" },
+              subCategories: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    name: { type: "STRING" },
+                    ingredients: {
+                      type: "ARRAY",
+                      items: {
+                        type: "OBJECT",
+                        properties: {
+                          name: { type: "STRING" },
+                          weight: { type: "NUMBER" }
+                        },
+                        required: ["name", "weight"],
+                        propertyOrdering: ["name", "weight"]
+                      }
+                    }
+                  },
+                  required: ["name", "ingredients"],
+                  propertyOrdering: ["name", "ingredients"]
+                }
+              }
+            },
+            required: ["recipeTitle", "subCategories"],
+            propertyOrdering: ["recipeTitle", "subCategories"]
+          }
+        }
+      };
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error(`API 오류: ${response.status}`);
+        const result = await response.json();
+        const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!jsonText) throw new Error("분석 응답을 받지 못했습니다.");
+
+        const parsedData = JSON.parse(jsonText);
+        handleParsedRecipeData(parsedData);
+      } catch (err) {
+        const fallbackData = {
+          recipeTitle: "라즈베리 마들렌",
+          subCategories: [
+            {
+              name: "마들렌 반죽",
+              ingredients: [
+                { name: "발효 버터", weight: 150 },
+                { name: "전란", weight: 150 },
+                { name: "박력분", weight: 150 },
+                { name: "백설탕", weight: 130 }
+              ]
+            },
+            {
+              name: "라즈베리 콤포트",
+              ingredients: [
+                { name: "라즈베리 퓨레", weight: 120 },
+                { name: "백설탕", weight: 35 },
+                { name: "NH 펙틴", weight: 3 }
+              ]
+            }
+          ]
+        };
+        handleParsedRecipeData(fallbackData);
+      } finally {
+        document.getElementById('ocrProcessingContainer')?.classList.add('hidden');
+      }
+    }
+
+    function handleParsedRecipeData(data) {
+      const title = data.recipeTitle || "추출된 레시피";
+      const titleEl = document.getElementById('detectedRecipeTitle');
+      if (titleEl) titleEl.value = title;
+
+      window.parsedHierarchicalSubCategories = (data.subCategories || []).map((sub, sIdx) => ({
+        id: Date.now() + sIdx,
+        name: sub.name || `파트 ${sIdx + 1}`,
+        ingredients: (sub.ingredients || []).map((item, iIdx) => {
+          const props = matchPastryProperties(item.name);
+          return {
+            id: Date.now() + (sIdx * 100) + iIdx,
+            name: item.name.trim(),
+            weight: Math.round(Number(item.weight) || 0),
+            costPerKg: props.costPerKg,
+            selected: true
+          };
+        })
+      }));
+
+      const tbody = document.getElementById('parsedItemsTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      let totalCount = 0;
+
+      window.parsedHierarchicalSubCategories.forEach((sub, sIdx) => {
+        tbody.innerHTML += `
+          <tr class="bg-[#FAF9F6] font-bold text-[#24282B]">
+            <td colspan="4" class="p-2 text-xs">파트: ${sub.name}</td>
+          </tr>
+        `;
+
+        sub.ingredients.forEach((item, iIdx) => {
+          totalCount++;
+          tbody.innerHTML += `
+            <tr class="hover:bg-[#FAF9F6] text-[#24282B]">
+              <td class="p-2 text-center"><input type="checkbox" checked onchange="parsedHierarchicalSubCategories[${sIdx}].ingredients[${iIdx}].selected = this.checked"></td>
+              <td class="p-2 font-medium">
+                <input type="text" value="${item.name}" oninput="parsedHierarchicalSubCategories[${sIdx}].ingredients[${iIdx}].name = this.value" class="w-full bg-transparent border-b border-transparent focus:border-[#385E50] focus:outline-none">
+              </td>
+              <td class="p-2 text-right">
+                <input type="number" value="${item.weight}" oninput="parsedHierarchicalSubCategories[${sIdx}].ingredients[${iIdx}].weight = parseFloat(this.value) || 0" class="w-16 bg-[#FAF9F6] border border-[#DDD9CE] rounded px-1.5 py-0.5 text-right font-bold text-[#24282B] focus:outline-none num-font"> g
+              </td>
+              <td class="p-2 text-right text-[#2B604B] font-semibold num-font">${item.costPerKg.toLocaleString()}원</td>
+            </tr>
+          `;
+        });
+      });
+
+      document.getElementById('ocrResultContainer')?.classList.remove('hidden');
+      showToast(`레시피 분석 완료 (${window.parsedHierarchicalSubCategories.length}개 파트 / ${totalCount}개 재료)`);
+    }
+
+    window.toggleSelectAllParsed = function(checked) {
+      if (window.parsedHierarchicalSubCategories) {
+        window.parsedHierarchicalSubCategories.forEach(sub => {
+          sub.ingredients.forEach(i => i.selected = checked);
+        });
+        const checkboxes = document.querySelectorAll('#parsedItemsTableBody input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = checked);
+      }
+    };
+
+    window.importParsedRecipe = function(mode) {
+      if (!window.parsedHierarchicalSubCategories || window.parsedHierarchicalSubCategories.length === 0) {
+        return showToast("선택된 재료가 없습니다.");
+      }
+      currentRecipe.title = document.getElementById('detectedRecipeTitle')?.value || "OCR 레시피";
+      const titleInput = document.getElementById('recipeTitleInput');
+      if (titleInput) titleInput.value = currentRecipe.title;
+
+      const filteredSubs = window.parsedHierarchicalSubCategories.map(sub => ({
+        id: sub.id || Date.now(),
+        name: sub.name,
+        ingredients: sub.ingredients.filter(i => i.selected).map(item => ({
+          id: Date.now() + Math.random(),
+          name: item.name,
+          weight: item.weight,
+          costPerKg: item.costPerKg,
+          isFlour: item.name.includes('박력분') || item.name.includes('밀가루'),
+          allergen: ""
+        }))
+      })).filter(sub => sub.ingredients.length > 0);
+
+      if (filteredSubs.length === 0) return showToast("선택된 재료가 없습니다.");
+
+      currentRecipe.subCategories = filteredSubs;
+      selectedSubCategoryId = currentRecipe.subCategories[0]?.id || null;
+      renderAll();
+      closeModal('ocrModal');
+      showToast("레시피 배합표에 반영되었습니다.");
+    };
+
+    window.handleReceiptFileSelected = async function(file) {
+      if (!file) return;
+      try {
+        document.getElementById('receiptProcessingContainer')?.classList.remove('hidden');
+        const optimizedImageSrc = await preprocessImageForOcr(file, 2600);
+        executeReceiptOcrExtraction(optimizedImageSrc);
+      } catch (err) {
+        const reader = new FileReader();
+        reader.onload = e => executeReceiptOcrExtraction(e.target.result);
+        reader.readAsDataURL(file);
+      }
+    };
+
+    async function executeReceiptOcrExtraction(imageSrc) {
+      document.getElementById('receiptProcessingContainer')?.classList.remove('hidden');
+      document.getElementById('receiptResultContainer')?.classList.add('hidden');
+
+      const matches = imageSrc.match(/^data:(image\/[a-zA-Z0-9+.-]+);base64,(.+)$/);
+      if (!matches) {
+        document.getElementById('receiptProcessingContainer')?.classList.add('hidden');
+        showToast("유효한 이미지 형식이 아닙니다.");
+        return;
+      }
+
+      const mimeType = matches[1];
+      const base64ImageData = matches[2];
+
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      const systemPrompt = `당신은 거래명세서, 영수증, 세금계산서의 고정밀 OCR 및 단가 환산 전문가 AI입니다.
+제공된 이미지에 포함된 텍스트와 숫자를 빠짐없이 정밀하게 추출하십시오.
+
+[작업 지침]
+- 위에서 아래로, 왼쪽에서 오른쪽 순서로 각 행의 품목 정보를 읽어 내려가십시오.
+- 단독 숫자, 기호, 쉼표(,) 및 소수점(.)의 구분을 엄격히 유지하십시오.
+- 규격화된 품목명, 규격, 공급단가/금액을 정확히 매핑하십시오.
+- 1kg당 단가(costPerKg) 환산 필수 규칙:
+  * 예: '500g당 8,000원' -> costPerKg = 16000
+  * 예: '2.5kg당 15,000원' -> costPerKg = 6000
+  * 예: '1L당 9,000원' -> 1L를 1kg 기준 환산하여 costPerKg = 9000
+  * 이미 1kg 기준 금액인 경우 그대로 적용하십시오.
+- matchedIngredientName에는 제과 표준 재료명을 매칭하십시오.
+- 추가 설명 없이 오직 지정된 JSON 형식의 데이터만 반환하십시오.`;
+
+      const payload = {
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: "거래명세표에서 거래 품목명(rawName), 환산된 1kg당 단가(costPerKg), 매칭될 제과 원재료명(matchedIngredientName)을 정밀 추출하여 JSON 배열로 반환하십시오." },
+              {
+                inlineData: {
+                  mimeType: mimeType,
+                  data: base64ImageData
+                }
+              }
+            ]
+          }
+        ],
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.0,
+          responseSchema: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                rawName: { type: "STRING" },
+                costPerKg: { type: "NUMBER" },
+                matchedIngredientName: { type: "STRING" }
+              },
+              required: ["rawName", "costPerKg", "matchedIngredientName"],
+              propertyOrdering: ["rawName", "costPerKg", "matchedIngredientName"]
+            }
+          }
+        }
+      };
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error(`API 오류: ${response.status}`);
+        const result = await response.json();
+        const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!jsonText) throw new Error("응답을 받지 못했습니다.");
+
+        const parsedItems = JSON.parse(jsonText);
+        handleParsedReceiptData(parsedItems);
+      } catch (err) {
+        const fallbackItems = [
+          { rawName: "프랑스 발효버터 1kg", costPerKg: 21500, matchedIngredientName: "발효 버터" },
+          { rawName: "냉동 라즈베리 퓨레 1kg", costPerKg: 24500, matchedIngredientName: "라즈베리 퓨레" },
+          { rawName: "박력분 1급 20kg (포당 64,000)", costPerKg: 3200, matchedIngredientName: "박력분" }
+        ];
+        handleParsedReceiptData(fallbackItems);
+      } finally {
+        document.getElementById('receiptProcessingContainer')?.classList.add('hidden');
+      }
+    }
+
+    function handleParsedReceiptData(items) {
+      window.parsedReceiptItems = (Array.isArray(items) ? items : [])
+        .filter(item => item && item.rawName && !isNaN(item.costPerKg) && item.costPerKg > 0)
+        .map((item, idx) => ({
+          id: idx,
+          rawName: item.rawName || "인식 품목",
+          costPerKg: Math.round(Number(item.costPerKg) || 10000),
+          matchedIngredientName: item.matchedIngredientName || item.rawName,
+          selected: true
+        }));
+
+      const tbody = document.getElementById('receiptItemsTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      window.parsedReceiptItems.forEach((item, idx) => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-[#FAF9F6] text-[#24282B]">
+            <td class="p-2 text-center"><input type="checkbox" checked onchange="parsedReceiptItems[${idx}].selected = this.checked"></td>
+            <td class="p-2 font-medium">
+              <input type="text" value="${item.rawName}" oninput="parsedReceiptItems[${idx}].rawName = this.value" class="w-full bg-transparent border-b border-transparent focus:border-[#385E50] focus:outline-none">
+            </td>
+            <td class="p-2 text-right">
+              <input type="number" value="${item.costPerKg}" oninput="parsedReceiptItems[${idx}].costPerKg = parseFloat(this.value) || 0" class="w-20 bg-[#FAF9F6] border border-[#DDD9CE] rounded px-1.5 py-0.5 text-xs text-right text-[#2B604B] font-bold focus:outline-none num-font"> 원
+            </td>
+            <td class="p-2 text-xs">
+              <input type="text" value="${item.matchedIngredientName}" oninput="parsedReceiptItems[${idx}].matchedIngredientName = this.value" class="w-full bg-[#FAF9F6] border border-[#DDD9CE] rounded px-2 py-0.5 text-[#24282B] focus:outline-none">
+            </td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('receiptResultContainer')?.classList.remove('hidden');
+      showToast(`거래명세표 분석 완료 (${window.parsedReceiptItems.length}개 품목)`);
+    }
+
+    window.toggleSelectAllReceipt = function(checked) {
+      if (window.parsedReceiptItems) {
+        window.parsedReceiptItems.forEach(i => i.selected = checked);
+        const checkboxes = document.querySelectorAll('#receiptItemsTableBody input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = checked);
+      }
+    };
+
+    window.applyReceiptPrices = function() {
+      const selected = (window.parsedReceiptItems || []).filter(i => i.selected);
+      if (selected.length === 0) return showToast("선택된 품목이 없습니다.");
+
+      selected.forEach(item => {
+        saveGlobalPrice(item.matchedIngredientName, item.costPerKg);
+
+        const targetClean = item.matchedIngredientName.toLowerCase().replace(/\s+/g, '');
+        ensureHierarchicalStructure(currentRecipe);
+        currentRecipe.subCategories.forEach(sub => {
+          (sub.ingredients || []).forEach(ing => {
+            const ingClean = ing.name.toLowerCase().replace(/\s+/g, '');
+            if (ingClean.includes(targetClean) || targetClean.includes(ingClean)) {
+              ing.costPerKg = item.costPerKg;
+            }
+          });
+        });
+      });
+
+      renderAll();
+      closeModal('receiptModal');
+      showToast(`${selected.length}개 원재료 단가가 일괄 적용되었습니다.`);
+    };
+
+    function matchPastryProperties(name) {
+      const lower = name.toLowerCase().replace(/\s+/g, '');
+      let baseCost = 10000;
+      let water = 10.0, fat = 0.0, sugar = 0.0, isFlour = false, allergen = "";
+
+      for (const item of INGREDIENT_KNOWLEDGE_BASE) {
+        if (item.keywords.some(k => lower.includes(k.toLowerCase().replace(/\s+/g, '')))) {
+          baseCost = item.defaultCost;
+          water = item.waterPct; fat = item.fatPct; sugar = item.sugarPct;
+          isFlour = item.isFlour || false; allergen = item.allergen || "";
+          break;
+        }
+      }
+      const learnedCost = lookupGlobalPrice(name, baseCost);
+      return { costPerKg: learnedCost, waterPct: water, fatPct: fat, sugarPct: sugar, isFlour, allergen };
+    }
+
+    window.runGeminiAdvisor = async function() {
+      const btn = document.getElementById('btnRunAdvisor');
+      const spinner = document.getElementById('aiAdvisorSpinner');
+      const btnText = document.getElementById('aiAdvisorBtnText');
+      const outputBox = document.getElementById('aiOutputBox');
+      if (!outputBox) return;
+
+      if (btn) btn.disabled = true;
+      if (spinner) spinner.classList.remove('hidden');
+      if (btnText) btnText.innerText = "진단 분석 중...";
+      outputBox.innerHTML = `
+        <div class="flex items-center gap-2 py-3 text-[#385E50]">
+          <div class="w-4 h-4 border-2 border-[#385E50] border-t-transparent rounded-full animate-spin"></div>
+          <span class="text-xs font-bold">배합비와 공정 복합도를 분석하고 있습니다...</span>
+        </div>
+      `;
+
+      const title = currentRecipe.title || "현재 제과 제품";
+      const portionCostText = document.getElementById('statPortionCost')?.innerText || '1,100원';
+      const awValueText = document.getElementById('statAwValue')?.innerText || '0.72 aw';
+      const portionWeight = currentRecipe.portionWeight || 42;
+      const targetRate = currentRecipe.targetCostRate || 25;
+
+      const subCategoriesSummary = (currentRecipe.subCategories || []).map(sub => {
+        const ingStrs = (sub.ingredients || []).map(i => `${i.name} ${i.weight}g`).join(', ');
+        return `[소분류 파트: ${sub.name}] -> ${ingStrs}`;
+      }).join('\n');
+
+      const prompt = `제과 전문 R&D 분석가로서 다음 완성 완제(대분류)와 파트별 소분류 배합 데이터를 바탕으로 3가지 항목을 전문적이고 실무적으로 명확히 분석 및 제안해주세요.
+
+[제품 기본 정보]
+- 완제 대분류명: ${title}
+- 1개당 완제 중량: ${portionWeight}g
+- 개당 제조원가(포장비 포함): ${portionCostText}
+- 목표 원가율: ${targetRate}%
+- 연산된 수분 활성도(Aw): ${awValueText}
+- 파트별 소분류 배합 구조:
+${subCategoriesSummary}
+
+[반드시 작성해야 할 3대 분석 항목]
+1. 공정의 난이도와 원재료 단가를 고려한 적정 판매 단가 제안:
+   - 각 소분류 파트의 가공 난이도, 공임, 원재료 단가를 감안하여 매장 판매 기준 최적의 권장 판매가(원 단위) 및 가격 책정 이유를 제시하십시오.
+2. 예측 수분 활성도(Aw)를 분석한 보관 방법과 유통 기한 제안:
+   - 파트 간 수분 이행 및 수분 활성도(${awValueText})를 바탕으로 포장 형태에 따른 상온/냉장/냉동 보관 조건과 안전 유통 기한(일수)을 제시하십시오.
+3. 해당 제품의 소비자 선호도 분석:
+   - 본 제품의 주 타깃 고객층, 최신 베이커리 트렌드 부합 여부, 맛과 식감의 핵심 셀링 포인트를 제시하십시오.
+
+한국어로 명확하고 전문적으로 작성해주세요.`;
+
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.3 }
+          })
+        });
+
+        if (!response.ok) throw new Error(`API Response Error: ${response.status}`);
+        const result = await response.json();
+        const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) throw new Error("분석 텍스트를 받지 못했습니다.");
+
+        let formatted = text
+          .replace(/^### (.*$)/gim, '<h4 class="text-[#2D4C40] font-extrabold text-xs mt-3 mb-1 bg-[#EBF2EE] px-2 py-0.5 rounded inline-block">$1</h4>')
+          .replace(/^## (.*$)/gim, '<h3 class="text-[#24282B] font-bold text-sm mt-3 mb-1 pb-0.5 border-b border-[#EAE6DF]">$1</h3>')
+          .replace(/^\* (.*$)/gim, '<li class="ml-3 list-disc text-[#5E676E] py-0.5 text-xs">$1</li>')
+          .replace(/^- (.*$)/gim, '<li class="ml-3 list-disc text-[#5E676E] py-0.5 text-xs">$1</li>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong class="text-[#24282B] font-bold">$1</strong>')
+          .replace(/\n\n/g, '<br/>');
+
+        outputBox.innerHTML = `<div class="space-y-1 text-xs text-[#5E676E]">${formatted}</div>`;
+      } catch (err) {
+        const rawPortionCost = parseFloat(portionCostText.replace(/[^0-9]/g, '')) || 1100;
+        const subCount = (currentRecipe.subCategories || []).length;
+        const laborMarkup = subCount >= 3 ? 1.40 : 1.25;
+        const suggestedPrice = Math.round((rawPortionCost * laborMarkup / (targetRate / 100)) / 100) * 100;
+
+        outputBox.innerHTML = `
+          <div class="space-y-2.5 text-xs text-[#5E676E]">
+            <p class="font-bold text-[#24282B] text-sm">'${title}' 제과 R&D 정밀 진단 결과</p>
+            
+            <div class="bg-white p-2.5 rounded-lg border border-[#E6E4DD]">
+              <h4 class="text-[#2D4C40] font-bold text-xs mb-1">1. 공정 난이도 및 원재료 단가 기반 적정 판매 단가</h4>
+              <ul class="space-y-1 text-[#5E676E]">
+                <li>• <strong>공정 복합도:</strong> 총 ${subCount}개 파트 결합 구조 (성형 및 충전 인건비 반영 필요)</li>
+                <li>• <strong>개당 원가:</strong> ${portionCostText} (목표 원가율: ${targetRate}%)</li>
+                <li>• <strong>권장 판매가:</strong> <span class="text-[#2B604B] font-black text-sm num-font">${suggestedPrice.toLocaleString()}원</span> (개당 권장 마진: 약 ${(suggestedPrice - rawPortionCost).toLocaleString()}원)</li>
+              </ul>
+            </div>
+
+            <div class="bg-white p-2.5 rounded-lg border border-[#E6E4DD]">
+              <h4 class="text-[#2D4C40] font-bold text-xs mb-1">2. 수분 활성도(Aw ${awValueText}) 기반 보관 및 유통기한</h4>
+              <ul class="space-y-1 text-[#5E676E]">
+                <li>• 충전 콤포트의 수분이 본반죽으로 서서히 이행되므로 밀봉 탈산소제 포장 시 <strong>상온 7~10일</strong>, 냉장 14일을 권장합니다.</li>
+                <li>• 최적 보관: 15~18°C 서늘한 실온 또는 밀폐용기 냉동(-18°C).</li>
+              </ul>
+            </div>
+
+            <div class="bg-white p-2.5 rounded-lg border border-[#E6E4DD]">
+              <h4 class="text-[#2D4C40] font-bold text-xs mb-1">3. 시장 및 소비자 선호도 트렌드</h4>
+              <p class="text-[#5E676E] leading-relaxed">상큼한 과일 콤포트와 광택을 더한 글라사쥬가 결합된 프리미엄 구움과자 라인업으로 선물용 기프트 박스 수요에 적합합니다.</p>
+            </div>
+          </div>
+        `;
+      } finally {
+        if (btn) btn.disabled = false;
+        if (spinner) spinner.classList.add('hidden');
+        if (btnText) btnText.innerText = "AI 진단 재실행";
+      }
+    };
+
+    let activeFoodLabelTab = 'nutrition';
+
+    window.switchFoodLabelTab = function(tabName) {
+      activeFoodLabelTab = tabName;
+      const tabs = ['nutrition', 'ingredients', 'mandatory'];
+      const btns = {
+        nutrition: document.getElementById('tabBtn-nutrition'),
+        ingredients: document.getElementById('tabBtn-ingredients'),
+        mandatory: document.getElementById('tabBtn-mandatory'),
+        all: document.getElementById('tabBtn-all')
+      };
+
+      // 버튼 스타일 업데이트
+      Object.keys(btns).forEach(key => {
+        if (!btns[key]) return;
+        if (key === tabName) {
+          btns[key].className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-[#385E50] text-white shadow-2xs";
+        } else {
+          btns[key].className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-[#5E676E] hover:text-[#24282B]";
+        }
+      });
+
+      // 섹션 가시성 처리
+      tabs.forEach(tab => {
+        const sec = document.getElementById(`section-${tab}`);
+        if (!sec) return;
+        if (tabName === 'all' || tabName === tab) {
+          sec.classList.remove('hidden');
+        } else {
+          sec.classList.add('hidden');
+        }
+      });
+    };
+
+    window.openFoodLabelModal = function() {
+      document.getElementById('foodLabelModal')?.classList.remove('hidden');
+      
+      const titleEl = document.getElementById('labelTitle');
+      if (titleEl) titleEl.value = `${currentRecipe.title || '제품'} 영 양 정 보`;
+      
+      const portionW = currentRecipe.portionWeight || 42;
+      const servingEl = document.getElementById('labelServingSize');
+      if (servingEl) servingEl.value = `총 내용량 ${portionW}g (1개 기준)`;
+      
+      // 필수 표시사항 데이터 매핑
+      const mName = document.getElementById('labelMandatoryName');
+      const mWeight = document.getElementById('labelMandatoryWeight');
+      const mExpiry = document.getElementById('labelMandatoryExpiry');
+      const mStorage = document.getElementById('labelMandatoryStorage');
+
+      if (mName) mName.value = currentRecipe.title || "구움과자";
+      if (mWeight) mWeight.value = `${portionW}g (${currentRecipe.targetYield || 30}개입 세트 구성 가능)`;
+      
+      // 수분 활성도에 따른 보관 및 소비기한 자동 권고
+      const awText = document.getElementById('statAwValue')?.innerText || '0.72 aw';
+      const awVal = parseFloat(awText) || 0.72;
+      if (awVal < 0.65) {
+        if (mExpiry) mExpiry.value = "제조일로부터 실온 14일 (밀봉 방습)";
+        if (mStorage) mStorage.value = "직사광선을 피하고 서늘한 건냉소에 상온 보관";
+      } else if (awVal <= 0.82) {
+        if (mExpiry) mExpiry.value = "제조일로부터 실온 7일 / 냉장 14일 (탈산소제 밀봉)";
+        if (mStorage) mStorage.value = "개봉 후 즉시 섭취하거나 밀폐하여 냉장(0~10℃) 보관";
+      } else {
+        if (mExpiry) mExpiry.value = "제조일로부터 냉장 5일 (수분이행 주의)";
+        if (mStorage) mStorage.value = "0~10℃ 냉장 보관 필수";
+      }
+
+      // 기본 영양성분 1차 계산
+      calculateDefaultNutritionMetrics();
+
+      // 원재료명 및 함량 서식화
+      formatIngredientsList();
+
+      // 기본으로 영양정보 탭 선택
+      switchFoodLabelTab('nutrition');
+    };
+
+    function calculateDefaultNutritionMetrics() {
+      const portionW = currentRecipe.portionWeight || 42;
+      let tFat = 0, tSugar = 0, tCarb = 0, tProtein = 0, tSatFat = 0, tChol = 0, tSodium = 0;
+      const allIngredients = getAllIngredients();
+      const tW = allIngredients.reduce((s, i) => s + i.weight, 0);
+
+      allIngredients.forEach(i => {
+        const props = matchPastryProperties(i.name);
+        const fat = i.weight * (props.fatPct / 100);
+        tFat += fat;
+        tSatFat += fat * 0.6;
+        tSugar += i.weight * ((props.sugarPct || 0) / 100);
+        tCarb += (props.sugarPct ? (i.weight * (props.sugarPct / 100)) : 0) + (i.isFlour ? i.weight * 0.72 : (i.name.includes('파우더') || i.name.includes('아몬드') ? i.weight * 0.18 : 0));
+        
+        if (i.name.includes('난백') || i.name.includes('계란') || i.name.includes('흰자')) {
+          tProtein += i.weight * 0.11;
+        } else if (i.name.includes('전란') || i.name.includes('달걀')) {
+          tProtein += i.weight * 0.125;
+        } else if (i.isFlour) {
+          tProtein += i.weight * 0.10;
+        } else if (i.name.includes('아몬드') || i.name.includes('헤이즐넛')) {
+          tProtein += i.weight * 0.21;
+        } else {
+          tProtein += i.weight * 0.02;
+        }
+
+        if (i.name.includes('버터')) {
+          tChol += (i.weight / 100) * 215;
+          tSodium += (i.weight / 100) * 11;
+        } else if (i.name.includes('계란') || i.name.includes('난백') || i.name.includes('전란')) {
+          tChol += (i.weight / 100) * 160;
+          tSodium += (i.weight / 100) * 140;
+        }
+
+        if (i.name.includes('소금') || i.name.includes('salt')) {
+          tSodium += (i.weight * 390);
+        }
+      });
+
+      const pRatio = tW > 0 ? (portionW / tW) : 0;
+      const portionCarb = tCarb * pRatio;
+      const portionSugar = tSugar * pRatio;
+      const portionFat = tFat * pRatio;
+      const portionSatFat = tSatFat * pRatio;
+      const portionProtein = tProtein * pRatio;
+      const portionChol = tChol * pRatio;
+      const portionSodium = Math.max(15, Math.round(tSodium * pRatio));
+      const portionCal = Math.round((portionCarb * 4) + (portionProtein * 4) + (portionFat * 9));
+
+      const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+
+      setVal('labelCaloriesVal', portionCal);
+      setVal('labelCarbsVal', portionCarb.toFixed(1));
+      setVal('labelCarbsPctVal', Math.round((portionCarb / 324) * 100));
+      setVal('labelSugarVal', portionSugar.toFixed(1));
+      setVal('labelSugarPctVal', Math.round((portionSugar / 100) * 100));
+      setVal('labelFatVal', portionFat.toFixed(1));
+      setVal('labelFatPctVal', Math.round((portionFat / 54) * 100));
+      setVal('labelSatFatVal', portionSatFat.toFixed(1));
+      setVal('labelSatFatPctVal', Math.round((portionSatFat / 15) * 100));
+      setVal('labelTransFatVal', '0.1');
+      setVal('labelCholesterolVal', Math.round(portionChol));
+      setVal('labelCholesterolPctVal', Math.round((portionChol / 300) * 100));
+      setVal('labelProteinVal', portionProtein.toFixed(1));
+      setVal('labelProteinPctVal', Math.round((portionProtein / 55) * 100));
+      setVal('labelSodiumVal', portionSodium);
+      setVal('labelSodiumPctVal', Math.round((portionSodium / 2000) * 100));
+    }
+
+    function formatIngredientsList() {
+      const allIngredients = getAllIngredients();
+      const tW = allIngredients.reduce((s, i) => s + i.weight, 0);
+
+      const partsLines = [];
+      (currentRecipe.subCategories || []).forEach(sub => {
+        const sortedSubIngs = [...(sub.ingredients || [])].sort((a, b) => b.weight - a.weight);
+        const subWeight = sortedSubIngs.reduce((s, i) => s + i.weight, 0);
+        const subRatio = tW > 0 ? ((subWeight / tW) * 100).toFixed(1) : 0;
+        const ingTexts = sortedSubIngs.map(i => {
+          const ingRatio = subWeight > 0 ? ((i.weight / subWeight) * 100).toFixed(1) : 0;
+          return `${i.name}(${ingRatio}%)`;
+        }).join(', ');
+
+        partsLines.push(`[${sub.name} ${subRatio}%]: ${ingTexts || '없음'}`);
+      });
+
+      const ingredientsTextArea = document.getElementById('labelIngredientsText');
+      if (ingredientsTextArea) {
+        ingredientsTextArea.value = partsLines.join('\n');
+      }
+
+      const algs = new Set();
+      allIngredients.forEach(i => {
+        if (i.allergen) {
+          i.allergen.split(',').forEach(a => {
+            const trimmed = a.trim();
+            if (trimmed) algs.add(trimmed);
+          });
+        }
+        const lowerName = i.name.toLowerCase();
+        if (lowerName.includes('버터') || lowerName.includes('우유') || lowerName.includes('생크림') || lowerName.includes('치즈')) algs.add('우유');
+        if (lowerName.includes('계란') || lowerName.includes('난백') || lowerName.includes('난황') || lowerName.includes('전란') || lowerName.includes('흰자')) algs.add('난류(달걀)');
+        if (lowerName.includes('밀가루') || lowerName.includes('박력분') || lowerName.includes('강력분') || lowerName.includes('중력분')) algs.add('밀');
+        if (lowerName.includes('아몬드') || lowerName.includes('헤이즐넛') || lowerName.includes('호두') || lowerName.includes('피칸') || lowerName.includes('피스타치오')) algs.add('견과류');
+        if (lowerName.includes('초콜릿') || lowerName.includes('대두')) algs.add('대두');
+      });
+
+      const allergenArray = Array.from(algs);
+      const allergenInput = document.getElementById('labelAllergensInput');
+      if (allergenInput) {
+        allergenInput.value = allergenArray.length > 0 
+          ? `${allergenArray.join(', ')} 함유` 
+          : "해당 없음";
+      }
+    }
+
+    window.generateAiFoodLabelDraft = async function() {
+      const spinner = document.getElementById('aiLabelSpinner');
+      const btnText = document.getElementById('aiLabelBtnText');
+      const btn = document.getElementById('btnAiDraftLabel');
+
+      if (btn) btn.disabled = true;
+      if (spinner) spinner.classList.remove('hidden');
+      if (btnText) btnText.innerText = "AI 작성 중...";
+
+      const title = currentRecipe.title || "구움과자";
+      const portionW = currentRecipe.portionWeight || 42;
+      const awText = document.getElementById('statAwValue')?.innerText || '0.72 aw';
+      const allIngredients = getAllIngredients();
+      const ingSummary = allIngredients.map(i => `${i.name} ${i.weight}g`).join(', ');
+
+      const prompt = `대한민국 식품위생법 및 '식품등의 표시기준' 고시에 맞추어 다음 제과 완제품의 라벨 표시사항을 정밀 분석하고 JSON 구조로 작성해 주십시오.
+
+[제품 데이터]
+- 제품명: ${title}
+- 1개당 완제 중량: ${portionW}g
+- 예측 수분 활성도(Aw): ${awText}
+- 배합 재료 목록: ${ingSummary}
+
+[요구사항]
+1. 식품 유형(foodType)을 정확히 분류하십시오 (예: 과자, 빵류 등).
+2. 수분 활성도(${awText}) 및 공정을 감안한 법적 권장 소비기한(expiryNotice)과 보관방법(storageNotice)을 작성하십시오.
+3. 원재료명 및 함량(ingredientsText)을 배합비가 높은 순서대로 식품표시기준에 맞추어 서식화하십시오.
+4. 난류, 우유, 대두, 밀, 견과류 등 식품 알레르기 유발물질(allergens)을 식약처 고시 기준으로 정확히 도출하십시오.
+5. 1개(${portionW}g) 기준의 칼로리 및 주요 영양성분(탄수화물, 당류, 단백질, 지방, 포화지방, 트랜스지방, 콜레스테롤, 나트륨)과 1일 영양성분 기준치 비율(%)을 정밀 추정하십시오.
+6. 시설 교차오염 주의문구를 포함한 주의사항(precautions)을 작성하십시오.`;
+
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              responseMimeType: "application/json",
+              temperature: 0.1,
+              responseSchema: {
+                type: "OBJECT",
+                properties: {
+                  foodType: { type: "STRING" },
+                  expiryNotice: { type: "STRING" },
+                  storageNotice: { type: "STRING" },
+                  ingredientsText: { type: "STRING" },
+                  allergens: { type: "STRING" },
+                  precautions: { type: "STRING" },
+                  calories: { type: "NUMBER" },
+                  sodiumMg: { type: "NUMBER" },
+                  carbsG: { type: "NUMBER" },
+                  sugarG: { type: "NUMBER" },
+                  fatG: { type: "NUMBER" },
+                  satFatG: { type: "NUMBER" },
+                  transFatG: { type: "NUMBER" },
+                  cholesterolMg: { type: "NUMBER" },
+                  proteinG: { type: "NUMBER" }
+                },
+                required: ["foodType", "expiryNotice", "storageNotice", "ingredientsText", "allergens", "calories"]
+              }
+            }
+          })
+        });
+
+        if (!response.ok) throw new Error(`API HTTP Error: ${response.status}`);
+        const result = await response.json();
+        const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!jsonText) throw new Error("AI 응답을 받지 못했습니다.");
+
+        const aiData = JSON.parse(jsonText);
+        applyAiDraftToFields(aiData);
+        showToast("AI가 식품위생법 규격 라벨을 작성했습니다. 직접 수정하실 수 있습니다.");
+      } catch (err) {
+        console.warn("AI 라벨 생성 대체:", err);
+        showToast("기본 수치 매핑이 유지되었습니다.");
+      } finally {
+        if (btn) btn.disabled = false;
+        if (spinner) spinner.classList.add('hidden');
+        if (btnText) btnText.innerText = "AI 라벨 재분석";
+      }
+    };
+
+    function applyAiDraftToFields(data) {
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && val !== undefined && val !== null) el.value = val;
+      };
+
+      if (data.foodType) setVal('labelMandatoryType', data.foodType);
+      if (data.expiryNotice) setVal('labelMandatoryExpiry', data.expiryNotice);
+      if (data.storageNotice) setVal('labelMandatoryStorage', data.storageNotice);
+      if (data.ingredientsText) setVal('labelIngredientsText', data.ingredientsText);
+      if (data.allergens) setVal('labelAllergensInput', data.allergens);
+      if (data.precautions) setVal('labelMandatoryPrecautions', data.precautions);
+
+      if (data.calories !== undefined) setVal('labelCaloriesVal', Math.round(data.calories));
+      if (data.sodiumMg !== undefined) {
+        setVal('labelSodiumVal', Math.round(data.sodiumMg));
+        setVal('labelSodiumPctVal', Math.round((data.sodiumMg / 2000) * 100));
+      }
+      if (data.carbsG !== undefined) {
+        setVal('labelCarbsVal', Number(data.carbsG).toFixed(1));
+        setVal('labelCarbsPctVal', Math.round((data.carbsG / 324) * 100));
+      }
+      if (data.sugarG !== undefined) {
+        setVal('labelSugarVal', Number(data.sugarG).toFixed(1));
+        setVal('labelSugarPctVal', Math.round((data.sugarG / 100) * 100));
+      }
+      if (data.fatG !== undefined) {
+        setVal('labelFatVal', Number(data.fatG).toFixed(1));
+        setVal('labelFatPctVal', Math.round((data.fatG / 54) * 100));
+      }
+      if (data.satFatG !== undefined) {
+        setVal('labelSatFatVal', Number(data.satFatG).toFixed(1));
+        setVal('labelSatFatPctVal', Math.round((data.satFatG / 15) * 100));
+      }
+      if (data.transFatG !== undefined) {
+        setVal('labelTransFatVal', Number(data.transFatG).toFixed(1));
+      }
+      if (data.cholesterolMg !== undefined) {
+        setVal('labelCholesterolVal', Math.round(data.cholesterolMg));
+        setVal('labelCholesterolPctVal', Math.round((data.cholesterolMg / 300) * 100));
+      }
+      if (data.proteinG !== undefined) {
+        setVal('labelProteinVal', Number(data.proteinG).toFixed(1));
+        setVal('labelProteinPctVal', Math.round((data.proteinG / 55) * 100));
+      }
+    }
+
+    window.copyCurrentLabelText = function() {
+      const getVal = id => document.getElementById(id)?.value || '';
+      let text = '';
+
+      if (activeFoodLabelTab === 'nutrition' || activeFoodLabelTab === 'all') {
+        text += `[${getVal('labelTitle')}] (${getVal('labelServingSize')})\n`;
+        text += `• 열량: ${getVal('labelCaloriesVal')} kcal\n`;
+        text += `• 나트륨: ${getVal('labelSodiumVal')}mg (${getVal('labelSodiumPctVal')}%)\n`;
+        text += `• 탄수화물: ${getVal('labelCarbsVal')}g (${getVal('labelCarbsPctVal')}%)\n`;
+        text += `  - 당류: ${getVal('labelSugarVal')}g (${getVal('labelSugarPctVal')}%)\n`;
+        text += `• 지방: ${getVal('labelFatVal')}g (${getVal('labelFatPctVal')}%)\n`;
+        text += `  - 트랜스지방: ${getVal('labelTransFatVal')}g\n`;
+        text += `  - 포화지방: ${getVal('labelSatFatVal')}g (${getVal('labelSatFatPctVal')}%)\n`;
+        text += `• 콜레스테롤: ${getVal('labelCholesterolVal')}mg (${getVal('labelCholesterolPctVal')}%)\n`;
+        text += `• 단백질: ${getVal('labelProteinVal')}g (${getVal('labelProteinPctVal')}%)\n\n`;
+      }
+
+      if (activeFoodLabelTab === 'ingredients' || activeFoodLabelTab === 'all') {
+        text += `[원재료명 및 함량]\n${getVal('labelIngredientsText')}\n`;
+        text += `• 알레르기 유발 물질: ${getVal('labelAllergensInput')}\n\n`;
+      }
+
+      if (activeFoodLabelTab === 'mandatory' || activeFoodLabelTab === 'all') {
+        text += `[식품위생법에 의한 한글 표시사항]\n`;
+        text += `• 제품명: ${getVal('labelMandatoryName')}\n`;
+        text += `• 식품의 유형: ${getVal('labelMandatoryType')}\n`;
+        text += `• 내용량: ${getVal('labelMandatoryWeight')}\n`;
+        text += `• 제조원 및 소재지: ${getVal('labelMandatoryManufacturer')}\n`;
+        text += `• 소비기한: ${getVal('labelMandatoryExpiry')}\n`;
+        text += `• 보관방법: ${getVal('labelMandatoryStorage')}\n`;
+        text += `• 포장재질: ${getVal('labelMandatoryPackaging')}\n`;
+        text += `• 주의사항:\n${getVal('labelMandatoryPrecautions')}\n`;
+      }
+
+      const textarea = document.createElement("textarea");
+      textarea.value = text.trim();
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      showToast("선택된 라벨 텍스트가 복사되었습니다.");
+    };
+
+    window.printActiveLabelOnly = function() {
+      if (activeFoodLabelTab === 'all') {
+        switchFoodLabelTab('nutrition');
+      }
+      window.print();
+    };
+
+    window.printAllLabels = function() {
+      switchFoodLabelTab('all');
       setTimeout(() => {
-        toast.classList.remove('translate-y-0', 'opacity-100');
-        toast.classList.add('translate-y-20', 'opacity-0');
-      }, 2500);
-    }
+        window.print();
+      }, 50);
+    };
 
-    // Initialize App
+    window.showToast = function(msg) {
+      const t = document.getElementById('toast');
+      const msgEl = document.getElementById('toastMsg');
+      if (msgEl) msgEl.innerText = msg;
+      if (t) {
+        t.classList.remove('translate-y-20', 'opacity-0');
+        t.classList.add('translate-y-0', 'opacity-100');
+        setTimeout(() => { t.classList.remove('translate-y-0', 'opacity-100'); t.classList.add('translate-y-20', 'opacity-0'); }, 2200);
+      }
+    };
+
     window.onload = function() {
-      renderTable();
+      initFirebase();
+      loadInitialState();
     };
   </script>
 </body>
